@@ -1,0 +1,8 @@
+{
+    "repository" : {
+        "type" : "json",
+        "options" : {
+            "path" : "./message-example.json"
+        }
+    }
+}

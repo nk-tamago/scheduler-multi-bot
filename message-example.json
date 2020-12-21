@@ -1,0 +1,64 @@
+{
+  "variableMap": {
+    "test": "テスト",
+    "test2": "テスト2"
+  },
+  "tasks": [
+    {
+      "type": "slack",
+      "options" :{
+        "slack": {
+          "channelId": "xxxxxxx",
+          "token": "xxxxx-xxxxxxx-xxxxxxxx-xxxxxxxx",
+          "userName": "テストユーザ",
+          "iconUrl": "https://****.png"
+        }
+      },
+      "schedules": [
+        {
+          "mode": "sequence",
+          "cron": "*/1 * * * 1,2,3,4,5",
+          "texts": [
+            "シーケンス ${test} です",
+            "シーケンス ${test2} です"
+          ]
+        },
+        {
+          "mode": "random",
+          "cron": "*/1 * * * 1,2,3,4,5",
+          "texts": [
+            "ランダム ${test} です",
+            "ランダム ${test2} です"
+          ]
+        }
+      ]
+    }, 
+    {
+      "type": "debug",
+      "options" :{
+        "debug": {
+          "userName": "テストユーザ"
+        }
+      },
+      "schedules": [
+        {
+          "mode": "sequence",
+          "cron": "*/1 * * * 1,2,3,4,5",
+          "texts": [
+            "シーケンス ${test} です",
+            "シーケンス ${test2} です"
+          ]
+        },
+        {
+          "mode": "random",
+          "cron": "*/1 * * * 1,2,3,4,5",
+          "texts": [
+            "ランダム ${test} です",
+            "ランダム ${test2} です"
+          ]
+        }
+      ]
+    }
+
+  ]
+}
