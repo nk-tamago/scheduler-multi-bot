@@ -1,21 +1,36 @@
 'use strict'
 
 const TextConverter = class {
-    #variables
+    #staticVariables
+    #dynamicVariables
     constructor() {
-        this.#variables = new Array()
+        this.#staticVariables = new Array()
+        this.#dynamicVariables = new Array()
     }
-    addVariable(key, value) {
-        this.#variables.push({ key: key, value: value })
+    addStaticVariable(key, value) {
+        this.#staticVariables.push({ key: key, value: value })
+    }
+    addDynamicVariable(key, value) {
+        this.#dynamicVariables.push({ key: key, value: value })
     }
     convert(text) {
-        const convertText = this.#variables.reduce((after, variable) => {
-            const before = new RegExp("\\${" + variable.key + "}", 'g')
-            return after.replace(before, variable.value)
+        const convertStaticText = this.#staticVariables.reduce((after, variable) => {
+            const beforeReg = new RegExp("\\${" + variable.key + "}", 'g')
+            return after.replace(beforeReg, variable.value)
 
         }, text)
 
-        return convertText
+
+        const convertDynamicText = this.#dynamicVariables.reduce((after, variable) => {
+            const beforeReg = new RegExp("\\${" + variable.key + "}", 'g')
+
+            const execValue = Function(variable.value)()
+            return after.replace(beforeReg, execValue)
+
+        }, convertStaticText)
+
+
+        return convertDynamicText
     }
 }
 

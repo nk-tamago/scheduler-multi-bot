@@ -10,17 +10,28 @@ const NotificationService = class {
         this.#repository = RepositoryFactory.createRepository(config.repository.type, config.repository.options)
     }
     runTasks = async () => {
+        const _initTextConvert = async (repository) =>{
+            // 変数一覧の取得
+            const staticVariables = await repository.getStaticVariables()
+            const dynamicVariables = await repository.getDynamicVariables()
+
+            const textConverter = new TextConverter()
+
+            // コンバータに変数を入力
+            staticVariables.forEach((variable) => {
+                textConverter.addStaticVariable(variable.key, variable.value)
+            })
+            dynamicVariables.forEach((variable) => {
+                textConverter.addDynamicVariable(variable.key, variable.value)
+            })
+
+            return textConverter
+        }
+
         // データロード
         await this.#repository.load()
 
-        // 変数一覧の取得
-        const variables = await this.#repository.getVariables()
-
-        // コンバータに変数を入力
-        const textConverter = new TextConverter()
-        variables.forEach((variable) => {
-            textConverter.addVariable(variable.key, variable.value)
-        })
+        const textConverter = await _initTextConvert(this.#repository)
 
         // タスク一覧の取得
         const tasks = await this.#repository.getTasks()
@@ -40,12 +51,9 @@ const NotificationService = class {
             })
 
             // タスクランナーインスタンス作成
-            const taskRunner = new TaskRunner(bot)
+            const taskRunner = new TaskRunner(bot, textConverter)
             for (let schedule of task.schedules) {
-                // 表示文字列を変数に変換
-                let convertTexts = schedule.texts.map((text) => {
-                    return textConverter.convert(text)
-                })
+                const convertTexts = schedule.texts
                 // スケジューラに入力
                 taskRunner.add(schedule.cron, convertTexts, schedule.mode)
             }

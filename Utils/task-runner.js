@@ -8,8 +8,10 @@ const SCHEDULE_MODE_RANDOM = "random"
 const TaskRunner = class {
     #bot
     #tasks
-    constructor(bot) {
+    #textConverter
+    constructor(bot,textConverter) {
         this.#bot = bot
+        this.#textConverter = textConverter
         this.#tasks = new Array()
     }
     add = (cron, texts, mode) => {
@@ -19,14 +21,11 @@ const TaskRunner = class {
         let index = 0
         return async () => {
             //console.log("sequence index: ", index)
-
-            const res = await this.#bot.post(texts[index])
+            const res = await this.#bot.post( this.#textConverter.convert(texts[index]) )
             //console.log('Message sent: ', res)
 
             index++
-            //console.log(index)
             if (texts.length === index) {
-                //console.log("clear")
                 index = 0
             }
         }
@@ -36,7 +35,7 @@ const TaskRunner = class {
             const index = Math.floor(Math.random() * texts.length)
             //console.log('random index: ', index)
 
-            const res = await this.#bot.post(texts[index])
+            const res = await this.#bot.post( this.#textConverter.convert(texts[index]) )
             //console.log('Message sent: ', res)
         }
     }

@@ -18,7 +18,8 @@ const RepositoryFactory = class {
 
 const BaseRepository = class {
     load = async () => {}
-    getVariables = async () =>{}
+    getStaticVariables = async () =>{}
+    getDynamicVariables = async () =>{}
     getTasks = async () => {}
 }
 
@@ -32,10 +33,18 @@ const JsonRepository = class extends BaseRepository {
     load = async () => {
         this.#settingJson = JSON.parse(fs.readFileSync(this.#path, 'utf8'))
     }
-    getVariables = async () =>{
+    getStaticVariables = async () =>{
         const variables = new Array()
-        for (let key in this.#settingJson.variableMap) {
-            variables.push( {key: key, value: this.#settingJson.variableMap[key]})
+        for (let key in this.#settingJson.variables.staticVariableMap) {
+            variables.push( {key: key, value: this.#settingJson.variables.staticVariableMap[key]})
+        }
+
+        return variables
+    }
+    getDynamicVariables = async () =>{
+        const variables = new Array()
+        for (let key in this.#settingJson.variables.dynamicVariableMap) {
+            variables.push( {key: key, value: this.#settingJson.variables.dynamicVariableMap[key]})
         }
 
         return variables
