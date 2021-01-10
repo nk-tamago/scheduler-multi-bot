@@ -11,20 +11,20 @@ node index.js [configfile]
 
 ## configfileについて
 - `repository.type` は現在 `json` のみ対応しています
-- `repository.options.path` は下記で説明するmessageファイルを指定してください
+- `repository.options.path` は下記で説明するrepositoryファイルを指定してください
 ```json
 {
   "repository": {
     "type": "json",
     "options": {
-      "path": "./message-example.json"
+      "path": "./repository-example.json"
     }
   }
 }
 ```
-## messageファイル
-- `tasks.type` は現在 `slack` or `debug` が指定できます。`debug` を指定するとコンソールに表示します
-  - `tasks.options` は `tasks.type` によって設定する内容が異なります
+## repositoryファイル
+- `tasks.bot.type` は現在 `slack` or `debug` が指定できます。`debug` を指定するとコンソールに表示します
+  - `tasks.bot.options` は `tasks.bot.type` によって設定する内容が異なります
   - ```json
     {
       "options" :{
@@ -45,40 +45,38 @@ node index.js [configfile]
   - `random` を指定すると `texts` をランダムにpushします
 - `tasks.schedules.cron` は cron式を指定します
 - `tasks.schedules.texts` には変数を指定することが出来ます。変数には静的変数と動的変数が指定できます
-  - `staticVariableMap`(静的変数)
+  - `tasks.variables.type` == `static` が静的変数です
     - 固定値で置換します
-    - `${xxxx}` の `xxxx` と同じ項目で指定してください 
-  - `dynamicVariableMap`(動的変数)
+    - `${xxxx}` の `xxxx` と同じ項目で `key` を指定してください 
+  - `tasks.variables.type` == `dynamic` が動的変数です
     - 式の結果で置換します(例：`"return (new Date()).getTime()"`)
-    - `${xxxx}` の `xxxx` と同じ項目で指定してください
-    - `staticVariableMap` と同じ変数となった場合は `staticVariableMap` が優先されます
+    - `${xxxx}` の `xxxx` と同じ項目で `key` を指定してください
+  - `static` と `dynamic` で同じ変数となった場合は、先に登録した変数が優先されます
 - `tasks` は複数指定できます。異なるpush先を指定などが可能です
 
 ```json
 {
-  "variables": {
-    "staticVariableMap": {
-      "test": "テスト",
-      "test2": "テスト2"
-    },
-    "dynamicVariableMap": {
-      "getNowTime": "return (new Date()).getTime()"
-    }
-  },
   "tasks": [
     {
-      "type": "slack",
-      "options": {
-        "slack": {
-          "channelId": "xxxxxxx",
-          "token": "xxxxx-xxxxxxx-xxxxxxxx-xxxxxxxx",
-          "userName": "テストユーザ",
-          "iconUrl": "https://****.png"
-        },
-        "debug": {
-          "userName": "テストユーザ"
+      "bot" : {
+        "type": "slack",
+        "options": {
+          "slack": {
+            "channelId": "xxxxxxx",
+            "token": "xxxxx-xxxxxxx-xxxxxxxx-xxxxxxxx",
+            "userName": "テストユーザ",
+            "iconUrl": "https://****.png"
+          },
+          "debug": {
+            "userName": "テストユーザ"
+          }
         }
       },
+      "variables": [
+        { "type": "static", "key": "test", "value": "テスト" },
+        { "type": "static", "key": "test2", "value": "テスト2" },
+        { "type": "dynamic", "key": "getNowTime", "value": "return (new Date()).getTime()" }
+      ],
       "schedules": [
         {
           "mode": "sequence",
@@ -101,6 +99,7 @@ node index.js [configfile]
     }
   ]
 }
+
 ```
 
 ## Example

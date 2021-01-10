@@ -1,27 +1,25 @@
 {
-  "variables": {
-    "staticVariableMap": {
-      "test": "テスト",
-      "test2": "テスト2"
-    },
-    "dynamicVariableMap": {
-      "getNowTime": "return (new Date()).getTime() "
-    }
-  },
   "tasks": [
     {
-      "type": "slack",
-      "options": {
-        "slack": {
-          "channelId": "xxxxxxx",
-          "token": "xxxxx-xxxxxxx-xxxxxxxx-xxxxxxxx",
-          "userName": "テストユーザ",
-          "iconUrl": "https://****.png"
-        },
-        "debug": {
-          "userName": "テストユーザ"
+      "bot" : {
+        "type": "slack",
+        "options": {
+          "slack": {
+            "channelId": "xxxxxxx",
+            "token": "xxxxx-xxxxxxx-xxxxxxxx-xxxxxxxx",
+            "userName": "テストユーザ",
+            "iconUrl": "https://****.png"
+          },
+          "debug": {
+            "userName": "テストユーザ"
+          }
         }
       },
+      "variables": [
+        { "type": "static", "key": "test", "value": "テスト" },
+        { "type": "static", "key": "test2", "value": "テスト2" },
+        { "type": "dynamic", "key": "getNowTime", "value": "return (new Date()).getTime()" }
+      ],
       "schedules": [
         {
           "mode": "sequence",
@@ -43,12 +41,19 @@
       ]
     },
     {
-      "type": "debug",
-      "options": {
-        "debug": {
-          "userName": "テストユーザ"
+      "bot" :{
+        "type": "debug",
+        "options": {
+          "debug": {
+            "userName": "テストユーザ"
+          }
         }
       },
+      "variables": [
+        { "type": "static", "key": "test", "value": "テスト" },
+        { "type": "static", "key": "test2", "value": "テスト2" },
+        { "type": "dynamic", "key": "getNowTime", "value": "return (new Date()).getTime()" }
+      ],
       "schedules": [
         {
           "mode": "sequence",

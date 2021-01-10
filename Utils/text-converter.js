@@ -1,39 +1,34 @@
 'use strict'
 
+const { Variable } = require('../Models/Task/variable-vo.js')
+
 const TextConverter = class {
-    #staticVariables
-    #dynamicVariables
+    #variables
     constructor() {
-        this.#staticVariables = new Array()
-        this.#dynamicVariables = new Array()
+        this.#variables = []
     }
-    addStaticVariable(key, value) {
-        this.#staticVariables.push({ key: key, value: value })
+    addVariable(variable) {
+        this.#variables.push(variable)
     }
-    addDynamicVariable(key, value) {
-        this.#dynamicVariables.push({ key: key, value: value })
+    setVariables(variables) {
+        this.#variables = variables
     }
     convert(text) {
-        const convertStaticText = this.#staticVariables.reduce((after, variable) => {
-            const beforeReg = new RegExp("\\${" + variable.key + "}", 'g')
-            return after.replace(beforeReg, variable.value)
 
+        const convertText = this.#variables.toList().reduce((after, variable) => {
+            const beforeReg = new RegExp("\\${" + variable.key + "}", 'g')
+
+            let value = variable.value
+            if (variable.type === Variable.TYPE_DYNAMIC) {
+                value = Function(variable.value)()
+            }
+            return after.replace(beforeReg, value)
         }, text)
 
-
-        const convertDynamicText = this.#dynamicVariables.reduce((after, variable) => {
-            const beforeReg = new RegExp("\\${" + variable.key + "}", 'g')
-
-            const execValue = Function(variable.value)()
-            return after.replace(beforeReg, execValue)
-
-        }, convertStaticText)
-
-
-        return convertDynamicText
+        return convertText
     }
 }
 
 module.exports = {
-    TextConverter : TextConverter
+    TextConverter: TextConverter
 }

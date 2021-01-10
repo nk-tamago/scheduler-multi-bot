@@ -12,7 +12,7 @@ const appConfg = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'))
 
 const main = async (appConfg) => {
 
-//    console.log("start")
+    console.log("start")
 
     if (!appConfg.repository || !appConfg.repository.type || !appConfg.repository.options) {
         console.log("config error: repository not exists")
@@ -22,7 +22,7 @@ const main = async (appConfg) => {
     const service = new NotificationService(appConfg)
     await service.runTasks()
 
-//    console.log("end")
+    console.log("end")
 }
 
 try {
