@@ -38,7 +38,7 @@ const BaseRepository = class {
     getTasks = () => {
         return this.#tasks
     }
-    setTasks = async (tasks) => {
+    setTasks = (tasks) => {
         this.#tasks = tasks
     }
     addTask = (task) => {
@@ -47,7 +47,7 @@ const BaseRepository = class {
     clear = () => {
         this.#tasks = []
     }
-    getAllByJson = async () => {
+    toJson = () => {
         const json = {}
         json.tasks = []
         for (let task of this.#tasks) {

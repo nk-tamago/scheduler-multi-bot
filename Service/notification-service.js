@@ -44,7 +44,7 @@ const NotificationService = class {
             return
         }
 
-        // console.log(JSON.stringify( (await this.#repository.getAllByJson()),undefined, 2))
+        // console.log(JSON.stringify( this.#repository.toJson(),undefined, 2))
 
         // タスク一覧の取得
         const taskRunner = new TaskRunner()
