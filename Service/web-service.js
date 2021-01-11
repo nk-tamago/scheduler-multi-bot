@@ -23,10 +23,10 @@ const WebService = class {
             res.send("ok")
         })
         this.#app.get("/status", (req, res) =>{
-            this.#tasks.map( (task)=>{
-                task.isJobs()
+            const status = this.#tasks.map( (task)=> {
+                return { "name": task.getName(), "run" : task.isJobs()}
             })
-            res.send("ok")
+            res.send(JSON.stringify(status))
         })
 
         this.#app.get("/tasks",  (req, res) => {
@@ -38,3 +38,5 @@ const WebService = class {
         this.#app.put("/tasks")
     }
 }
+
+module.exports = WebService

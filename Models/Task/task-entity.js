@@ -54,7 +54,7 @@ const Task = class {
         return json
     }
     canStart = () => {
-        if( !this.getBot() || !this.getVariables() || !this.getSchedule() || !this.getName() ){
+        if( !this.getBot() || !this.getVariables() || !this.getSchedules() || !this.getName() ){
             return false
         }
         return true

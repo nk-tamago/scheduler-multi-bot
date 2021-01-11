@@ -20,7 +20,7 @@ const main = async (appConfg) => {
     }
 
     const service = new NotificationService(appConfg)
-    await service.runTasks()
+    await service.start()
 
     console.log("end")
 }

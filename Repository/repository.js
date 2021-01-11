@@ -75,7 +75,7 @@ const JsonRepository = class extends BaseRepository {
                 return false
             }
             this.tasks.push(task)
-            return ture
+            return true
         } 
 
         if (!json.tasks) {

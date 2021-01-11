@@ -1,6 +1,7 @@
 'use strict'
 
 const { RepositoryFactory } = require('../Repository/repository.js')
+const WebService = require('./web-service.js')
 
 const TaskRunner = class {
     #tasks
@@ -47,13 +48,16 @@ const NotificationService = class {
 
         // console.log(JSON.stringify( this.#repository.toJson(),undefined, 2))
 
+        const webService = new WebService()
         // タスク一覧の取得
         this.#taskRunner = new TaskRunner()
         const tasks = this.#repository.getTasks()
         for (let task of tasks) {
             this.#taskRunner.add(task)
+            webService.addTask(task)
         }
         this.#taskRunner.start()
+        webService.start()
 
         return true
     }
