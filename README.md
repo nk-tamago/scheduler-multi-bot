@@ -5,6 +5,11 @@ slackなどへ指定した日時に投稿するタスクスケジューラーで
 ```sh
 $ npm install
 ```
+## Requirement
+scheduler-multi-bot requires the following to run:
+
+  * [Node.js][node] 12.0+
+  * [npm][npm] (normally comes with Node.js)
 
 # Usage
 node index.js [configfile]

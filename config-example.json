@@ -2,7 +2,7 @@
     "repository": {
         "type": "json",
         "options": {
-            "path": "./message-example.json"
+            "path": "./repository-example.json"
         }
     }
 }
