@@ -33,26 +33,38 @@ const TaskRunner = class {
 
 const NotificationService = class {
     #repository
+    #taskRunner
     constructor(config) {
         this.#repository = RepositoryFactory.createRepository(config.repository.type, config.repository.options)
     }
-    runTasks = async () => {
+    start = async () => {
 
         // データロード
         if (await this.#repository.load() === false) {
             console.log("repository load error")
-            return
+            return false
         }
 
         // console.log(JSON.stringify( this.#repository.toJson(),undefined, 2))
 
         // タスク一覧の取得
-        const taskRunner = new TaskRunner()
+        this.#taskRunner = new TaskRunner()
         const tasks = this.#repository.getTasks()
         for (let task of tasks) {
-            taskRunner.add(task)
+            this.#taskRunner.add(task)
         }
-        taskRunner.start()
+        this.#taskRunner.start()
+
+        return true
+    }
+    stop = async () => {
+        if(!this.#taskRunner) {
+            return false
+        }
+        this.#taskRunner.stop()
+        this.#taskRunner.clear()
+
+        this.#taskRunner = null
     }
 }
 

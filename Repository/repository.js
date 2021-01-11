@@ -69,6 +69,15 @@ const JsonRepository = class extends BaseRepository {
     load = async () => {
         const json = JSON.parse(fs.readFileSync(this.#path, 'utf8'))
 
+        const _taskPush = (task) =>{
+            if( this.tasks.some( target => target.name === task.name) ){
+                console.log("task.name is exists: ", task.name)
+                return false
+            }
+            this.tasks.push(task)
+            return ture
+        } 
+
         if (!json.tasks) {
             console.log("tasks is not exists: ", this.#path)
             return false
@@ -103,9 +112,11 @@ const JsonRepository = class extends BaseRepository {
             }
 
 
-            const task = new Task(bot, variables, schedules)
+            const task = new Task(taskJson.name, bot, variables, schedules)
 
-            this.tasks.push(task)
+            if( !_taskPush(task) ){
+                return false
+            }
         }
 
 
