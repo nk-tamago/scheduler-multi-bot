@@ -1,35 +1,97 @@
 'use strict'
 
 const { RepositoryFactory } = require('../Repository/repository.js')
-const WebService = require('./web-service.js')
 
 const TaskRunner = class {
     #tasks
     constructor() {
         this.#tasks = []
     }
+    get tasks() {
+        return this.#tasks
+    }
+    getTask = (name) => {
+        return this.#tasks.find((t) => name === t.getName())
+    }
+    exists = (name) => {
+        return this.#tasks.some((t) => name === t.getName())
+    }
     add = (task) => {
+        if( this.#tasks.some((t) => task.name === t.getName()) === true ){
+            return false
+        }
         this.#tasks.push(task)
+
+        return true
+    }
+    update = (name, task) => {
+        //console.log(task)
+        const index= this.#tasks.findIndex((t) => name === t.getName())
+
+        if( index === -1 ){
+            return false
+        }
+
+        this.#tasks[index].stop()
+
+        this.#tasks[index] = task
+
+        this.#tasks[index].start()
+
+        return true
+    }
+    delete = (name) => {
+        const index= this.#tasks.findIndex((t) => name === t.getName())
+        if( index === -1 ){
+            return false
+        }
+
+        this.#tasks[index].stop()
+
+        this.#tasks.splice(index, 1)
+        return true
+
     }
     clear = () => {
         this.stop()
         this.#tasks = []
     }
-    start = () => {
-        this.#tasks.forEach((task) => {
+    startAll = () => {
+        for (let task of this.#tasks) {
             task.start()
-        })
+        }
     }
-    stop = () => {
-        this.#tasks.forEach((task) => {
+    stopAll = () => {
+        for (let task of this.#tasks) {
             task.stop()
-        })
+        }
     }
-    restart = () => {
-        this.#tasks.forEach((task) => {
+    restartAll = () => {
+        for (let task of this.#tasks) {
             task.restart()
-        })
+        }
     }
+    start = (name) => {
+        const task = this.getTask(name)
+
+        if( task === undefined){
+            return false
+        }
+        task.start()
+
+        return true
+    }
+    stop = (name) => {
+        const task = this.getTask(name)
+
+        if( task === undefined){
+            return false
+        }
+        task.stop()
+
+        return true
+    }
+    
 }
 
 const NotificationService = class {
@@ -38,38 +100,116 @@ const NotificationService = class {
     constructor(config) {
         this.#repository = RepositoryFactory.createRepository(config.repository.type, config.repository.options)
     }
-    start = async () => {
+    run = async () => {
 
         // データロード
         if (await this.#repository.load() === false) {
-            console.log("repository load error")
-            return false
+            const massage = 'repository load error'
+            console.log(massage)
+            throw massage
         }
 
         // console.log(JSON.stringify( this.#repository.toJson(),undefined, 2))
 
-        const webService = new WebService()
         // タスク一覧の取得
         this.#taskRunner = new TaskRunner()
         const tasks = this.#repository.getTasks()
         for (let task of tasks) {
             this.#taskRunner.add(task)
-            webService.addTask(task)
         }
-        this.#taskRunner.start()
-        webService.start()
+        this.#taskRunner.startAll()
 
         return true
     }
-    stop = async () => {
+    stop = () => {
         if(!this.#taskRunner) {
             return false
         }
-        this.#taskRunner.stop()
-        this.#taskRunner.clear()
+        this.#taskRunner.stopAll()
+        this.#taskRunner.clearAll()
 
         this.#taskRunner = null
     }
+    restart = () => {
+        if(!this.#taskRunner) {
+            return false
+        }
+        return this.#taskRunner.restartAll()
+    }
+    getStatus = () => {
+        if(!this.#taskRunner) {
+            return {}
+        }
+
+        const status = this.#taskRunner.tasks.map( (task)=>{
+            return { name: task.getName(), status: task.getStatus() }
+        })
+
+        return status
+    }
+    getTasks = () => {
+        if(!this.#taskRunner) {
+            return []
+        }
+
+        return this.#taskRunner.tasks
+    }
+    getTask = ( name ) => {
+        if(!this.#taskRunner) {
+            return null
+        }
+
+        const task = this.#taskRunner.tasks.find((t) => {
+            return (name === t.getName())
+        })
+        return task ? task: null
+
+    }
+    addTask = (task) => {
+        if(!this.#taskRunner) {
+            return false
+        }
+
+        return this.#taskRunner.add(task)
+    }
+    updateTask = (name, task) =>{
+        if(!this.#taskRunner) {
+            return false
+        }
+
+        return this.#taskRunner.update(name, task)
+    }
+    deleteTask = (name) => {
+        if(!this.#taskRunner) {
+            return false
+        }
+
+        return this.#taskRunner.delete(name)
+    }
+    upsertTask = (name, task) => {
+        if(!this.#taskRunner) {
+            return false
+        }
+        if( this.#taskRunner.exists(name) === true ){
+            return this.updateTask(name, task)
+        }
+        else {
+            return this.addTask(task)
+        }
+    }
+    startTask = (name) => {
+        if(!this.#taskRunner) {
+            return false
+        }
+        return this.#taskRunner.start(name)
+    }
+    stopTask = (name) => {
+        if(!this.#taskRunner) {
+            return false
+        }
+        return this.#taskRunner.stop(name)
+    }
+
 }
 
 module.exports = NotificationService

@@ -6,6 +6,8 @@ if (process.argv.length !== 3) {
 }
 
 const NotificationService = require('./Service/notification-service.js')
+const WebService = require('./Service/web-service.js')
+
 const fs = require('fs')
 
 const appConfg = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'))
@@ -19,8 +21,11 @@ const main = async (appConfg) => {
         return
     }
 
-    const service = new NotificationService(appConfg)
-    await service.start()
+    const notificationService = new NotificationService(appConfg)
+    await notificationService.run()
+
+    const webService = new WebService(notificationService)
+    webService.run()
 
     console.log("end")
 }

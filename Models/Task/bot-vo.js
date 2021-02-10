@@ -8,7 +8,7 @@ const Bot = class {
     #provider
     constructor( type, options = {} ){
         if( !type ){
-            throw("bot type is not exists: ")
+            throw("bot type is not exists")
         }
 
         this.#type = type

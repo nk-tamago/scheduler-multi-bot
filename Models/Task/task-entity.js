@@ -1,8 +1,10 @@
 'use strict'
 
 const NodeSchedule = require('node-schedule')
-const { Schedule } = require('./schedule-vo.js')
 const { TextConverter } = require('../../Utils/text-converter.js')
+const { Variable, Variables } = require('./variable-vo.js')
+const { Schedule, Schedules } = require('./schedule-vo.js')
+const { Bot } = require('./bot-vo.js')
 
 
 const Task = class {
@@ -17,6 +19,41 @@ const Task = class {
         this.#variables = variables
         this.#schedules = schedules
         this.#jobs = []
+    }
+
+    static fromJson = ( jsonString ) => {
+        const taskJson = JSON.parse( jsonString )
+
+        if (!taskJson.bot || !taskJson.bot.type || !taskJson.schedules) {
+            throw(`[bot.type or schedules] is not exists`)
+        }
+        for (let schedule of taskJson.schedules) {
+            if (!schedule.mode || !schedule.cron || !schedule.texts) {
+                throw(`schedule[mode or cron or texts] is not exists`)
+            }
+        }
+
+        const bot = new Bot(taskJson.bot.type, taskJson.bot.options)
+        const variables = new Variables()
+
+        if (taskJson.variables) {
+            for (let variableJson of taskJson.variables) {
+                const variable = new Variable(variableJson.type, variableJson.key, variableJson.value)
+                variables.add(variable)
+            }
+        }
+
+        const schedules = new Schedules()
+        for (let scheduleJson of taskJson.schedules) {
+            const schedule = new Schedule(scheduleJson.mode, scheduleJson.cron, scheduleJson.texts)
+            schedules.add(schedule)
+        }
+
+
+        const task = new Task(taskJson.name, bot, variables, schedules)
+
+        return task
+
     }
 
     setBot = (bot) => {
@@ -60,12 +97,10 @@ const Task = class {
         return true
     }
     start = () => {
-        const _sequenceRun = (texts, textConverter) => {
+        const sequenceRun = (texts, textConverter) => {
             let index = 0
             return async () => {
-                //console.log("sequence index: ", index)
                 const res = await this.#bot.provider.post(textConverter.convert(texts[index]))
-                //console.log('Message sent: ', res)
 
                 index++
                 if (texts.length === index) {
@@ -73,23 +108,23 @@ const Task = class {
                 }
             }
         }
-        const _randomRun = (texts, textConverter) => {
+        const randomRun = (texts, textConverter) => {
             return async () => {
                 const index = Math.floor(Math.random() * texts.length)
-                //console.log('random index: ', index)
 
                 const res = await this.#bot.provider.post(textConverter.convert(texts[index]))
-                //console.log('Message sent: ', res)
             }
         }
 
-        if( !this.canStart() ){
-            console.log("can't task start: ", JSON.stringify(this.toJson()))
-            return []
-        }
         if( this.isJobs() ){
-            console.log("job exists: ", this.#jobs)
-            return []
+            const massage = `run tasks: ${this.getName()}`
+            console.log(massage)
+            throw massage
+        }
+        if( !this.canStart() ){
+            const massage = `can't task start: ${this.getName()}`
+            console.log(massage)
+            throw massage
         }
 
 
@@ -101,13 +136,13 @@ const Task = class {
                 let run = null
                 switch (schedule.mode) {
                     case Schedule.MODE_SEQUENCE:
-                        run = _sequenceRun(schedule.texts, textConverter)
+                        run = sequenceRun(schedule.texts, textConverter)
                         break
                     case Schedule.MDDE_RANDOM:
-                        run = _randomRun(schedule.texts, textConverter)
+                        run = randomRun(schedule.texts, textConverter)
                         break
                     default:
-                        run = _sequenceRun(schedule.texts, textConverter)
+                        run = sequenceRun(schedule.texts, textConverter)
                         break
                 }
 
@@ -118,8 +153,9 @@ const Task = class {
                 this.#jobs.push(job)
 
             } catch (error) {
-                console.log("job error: ", error)
-                throw `job error: ${error}`
+                const massage = `job error: ${error}`
+                console.log(massage)
+                throw massage
             }
         })
 
@@ -135,14 +171,17 @@ const Task = class {
         this.stop()
         this.start()
     }
-    getJobs = () =>{
+    getJobs = () => {
         return this.#jobs
     }
-    isJobs = () =>{
+    isJobs = () => {
         if( this.#jobs.length > 0 ){
             return true
         }
         return false
+    }
+    getStatus = () => {
+        return this.isJobs() ? "run" : "stop"
     }
 }
 

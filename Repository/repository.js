@@ -57,6 +57,15 @@ const BaseRepository = class {
         return json
 
     }
+    updateTask = (name, task) =>{
+        const index = this.#tasks.findIndex( (t) =>{
+            return t.getName() === name
+        })
+
+        if(index >= 0){
+            this.#tasks[index] = task
+        }
+    }
 
 }
 
