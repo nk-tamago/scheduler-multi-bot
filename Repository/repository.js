@@ -16,7 +16,7 @@ const RepositoryFactory = class {
                 repository = new JsonRepository(options)
                 break
             default:
-                throw `don't support repository type: ${type}`
+                throw new Error(`don't support repository type: ${type}`)
         }
         return repository
     }

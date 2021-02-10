@@ -96,7 +96,7 @@ const TaskRunner = class {
 
 const NotificationService = class {
     #repository
-    #taskRunner
+    #taskRunner = null
     constructor(config) {
         this.#repository = RepositoryFactory.createRepository(config.repository.type, config.repository.options)
     }
@@ -105,8 +105,7 @@ const NotificationService = class {
         // データロード
         if (await this.#repository.load() === false) {
             const massage = 'repository load error'
-            console.log(massage)
-            throw massage
+            throw new Error(massage)
         }
 
         // console.log(JSON.stringify( this.#repository.toJson(),undefined, 2))
@@ -122,7 +121,7 @@ const NotificationService = class {
         return true
     }
     stop = () => {
-        if(!this.#taskRunner) {
+        if(this.#taskRunner === null) {
             return false
         }
         this.#taskRunner.stopAll()
@@ -131,14 +130,14 @@ const NotificationService = class {
         this.#taskRunner = null
     }
     restart = () => {
-        if(!this.#taskRunner) {
+        if(this.#taskRunner === null) {
             return false
         }
         return this.#taskRunner.restartAll()
     }
     getStatus = () => {
-        if(!this.#taskRunner) {
-            return {}
+        if(this.#taskRunner === null) {
+            return []
         }
 
         const status = this.#taskRunner.tasks.map( (task)=>{
@@ -148,46 +147,46 @@ const NotificationService = class {
         return status
     }
     getTasks = () => {
-        if(!this.#taskRunner) {
+        if(this.#taskRunner === null) {
             return []
         }
 
         return this.#taskRunner.tasks
     }
     getTask = ( name ) => {
-        if(!this.#taskRunner) {
-            return null
+        if(this.#taskRunner === null) {
+            return {}
         }
 
         const task = this.#taskRunner.tasks.find((t) => {
             return (name === t.getName())
         })
-        return task ? task: null
+        return task ? task: undefined
 
     }
     addTask = (task) => {
-        if(!this.#taskRunner) {
+        if(this.#taskRunner === null) {
             return false
         }
 
         return this.#taskRunner.add(task)
     }
     updateTask = (name, task) =>{
-        if(!this.#taskRunner) {
+        if(this.#taskRunner === null) {
             return false
         }
 
         return this.#taskRunner.update(name, task)
     }
     deleteTask = (name) => {
-        if(!this.#taskRunner) {
+        if(this.#taskRunner === null) {
             return false
         }
 
         return this.#taskRunner.delete(name)
     }
     upsertTask = (name, task) => {
-        if(!this.#taskRunner) {
+        if(this.#taskRunner === null) {
             return false
         }
         if( this.#taskRunner.exists(name) === true ){
@@ -198,13 +197,13 @@ const NotificationService = class {
         }
     }
     startTask = (name) => {
-        if(!this.#taskRunner) {
+        if(this.#taskRunner === null) {
             return false
         }
         return this.#taskRunner.start(name)
     }
     stopTask = (name) => {
-        if(!this.#taskRunner) {
+        if(this.#taskRunner === null) {
             return false
         }
         return this.#taskRunner.stop(name)

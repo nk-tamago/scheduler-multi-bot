@@ -25,11 +25,11 @@ const Task = class {
         const taskJson = JSON.parse( jsonString )
 
         if (!taskJson.bot || !taskJson.bot.type || !taskJson.schedules) {
-            throw(`[bot.type or schedules] is not exists`)
+            throw new Error(`[bot.type or schedules] is not exists`)
         }
         for (let schedule of taskJson.schedules) {
             if (!schedule.mode || !schedule.cron || !schedule.texts) {
-                throw(`schedule[mode or cron or texts] is not exists`)
+                throw new Error(`schedule[mode or cron or texts] is not exists`)
             }
         }
 
@@ -118,13 +118,11 @@ const Task = class {
 
         if( this.isJobs() ){
             const massage = `run tasks: ${this.getName()}`
-            console.log(massage)
-            throw massage
+            throw new Error(massage)
         }
         if( !this.canStart() ){
             const massage = `can't task start: ${this.getName()}`
-            console.log(massage)
-            throw massage
+            throw new Error(massage)
         }
 
 
@@ -154,8 +152,7 @@ const Task = class {
 
             } catch (error) {
                 const massage = `job error: ${error}`
-                console.log(massage)
-                throw massage
+                throw new Error(massage)
             }
         })
 

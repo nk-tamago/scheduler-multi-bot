@@ -30,11 +30,11 @@ const Variable = class {
     #value
     constructor(type, key, value) {
         if (!type || !key || !value) {
-            throw ("variable [type or key or value] is not exists")
+            throw new Error("variable [type or key or value] is not exists")
         }
 
         if (type !== Variable.TYPE_STATIC && type !== Variable.TYPE_DYNAMIC) {
-            throw `don't support variable type: ${type}`
+            throw new Error(`don't support variable type: ${type}`)
         }
 
         this.#type = type

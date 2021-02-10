@@ -30,10 +30,10 @@ const Schedule = class {
     #texts
     constructor(mode, cron, texts) {
         if (!mode || !cron || !texts) {
-            throw ("schedule [mode or cron or texts] is not exists")
+            throw new Error("schedule [mode or cron or texts] is not exists")
         }
         if (mode !== Schedule.MODE_SEQUENCE && mode !== Schedule.MDDE_RANDOM) {
-            throw `don't support schedule mode: ${mode}`
+            throw new Error(`don't support schedule mode: ${mode}`)
         }
 
 

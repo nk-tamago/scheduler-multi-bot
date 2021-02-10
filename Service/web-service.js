@@ -3,6 +3,45 @@ const cors = require("cors")
 const bodyParser = require('body-parser');
 const { Task } = require('../Models/Task/task-entity.js')
 
+const wrap = fn => (...args) => fn(...args).catch(args[2])
+
+
+const ResponseStatus = class {
+    #name 
+    #status
+    constructor( name, status) {
+        this.#name = name
+        this.#status = status
+    }
+    toJson = () => {
+        return { name: this.#name, status: this.#status }
+    }
+}
+
+const ResponseTask = class {
+    #task
+    constructor(task) {
+        this.#task = task
+    }
+    toJson = () => {
+        return this.#task.toJson()
+    }
+}
+
+const ResponseError = class {
+    static NAME_NOT_FIND = "Name not find"
+    static TASK_EXISTS = "Task exists"
+    static ILLEGAL_BODY = "Illegal body"
+    #message
+    constructor(message) {
+        this.#message = message
+    }
+    toJson = () => {
+        return { message: this.#message }
+    }
+}
+
+
 const WebService = class {
     #notificationService
     #tasks
@@ -20,119 +59,94 @@ const WebService = class {
     run = () => {
         this.#app.listen(process.env.PORT || 3000)
 
-        this.#app.get("/health", (req, res) =>{
-            res.send("ok")
-        })
+        this.#app.get("/health", wrap( async (req, res, next) => {
+            return res.json()
+        }))
 
-        this.#app.get("/status", (req, res) =>{
-            try {
-                const status = this.#notificationService.getStatus()
+        this.#app.get("/status", wrap( async (req, res, next) =>{
+            const resBody = this.#notificationService.getStatus().map( (s) => {
+                return (new ResponseStatus(s.name, s.status)).toJson()
+           })
+ 
+            return res.json(resBody)
+        }))
 
-                res.send(status)
-            } catch (e) {
-                res.status(500).send(`${e}`)
+        this.#app.get("/status/:name", wrap( async (req, res, next) => {
+            const status = this.#notificationService.getStatus().find( (t) => req.params.name === t.name )
+            if( status === undefined ){
+                return res.status(400).json((new ResponseError( ResponseError.NAME_NOT_FIND )).toJson())
             }
-        })
-
-        this.#app.get("/status/:name", (req, res) =>{
-
-            try {
-                const status = this.#notificationService.getStatus().find( (t) => req.params.name === t.name )
-                res.send((status ? status : {}))
-            } catch (e) {
-                res.status(500).send(`${e}`)
-            }
-        })
+            const resObj = new ResponseStatus(req.params.name, status.status )
+            return res.json(resObj.toJson())
+        }))
         
 
-        this.#app.get("/tasks",  (req, res) => {
+        this.#app.get("/tasks", wrap( async (req, res, next) => {
+            const resBody = this.#notificationService.getTasks().map( (t)=>{
+                return (new ResponseTask(t)).toJson()
+            })
+            return res.json(resBody)
+        }))
 
-            try {
-                const tasks = this.#notificationService.getTasks().map( (t)=>{
-                    return t.toJson()
-                })
-                res.send(tasks)
-            } catch (e) {
-                res.status(500).send(`${e}`)
+        this.#app.get("/tasks/:name", wrap( async (req, res, next) => {
+            const task = this.#notificationService.getTask(req.params.name)
+            if( task === undefined ){
+                return res.status(400).json((new ResponseError(ResponseError.NAME_NOT_FIND )).toJson())
             }
-        })
+            const resObj = new ResponseTask(task)
 
-        this.#app.get("/tasks/:name",  (req, res) => {
-            try {
-                const task = this.#notificationService.getTask(req.params.name)
-                res.send( task ? task.toJson(): {} )
-            } catch (e) {
-                res.status(500).send(`${e}`)
-            }
-        })
+            return res.json( resObj.toJson())
+        }))
 
-        this.#app.get("/tasks/:name/start",  (req, res) => {
-            try {
-                this.#notificationService.startTask(req.params.name)
-                res.status(204).send()
-            } catch (e) {
-                res.status(500).send(`${e}`)
-            }
-        })
+        this.#app.get("/tasks/:name/start", wrap( async (req, res, next) => {
+            this.#notificationService.startTask(req.params.name)
+            return res.status(204).json()
+        }))
 
-        this.#app.get("/tasks/:name/stop",  (req, res) => {
-            try {
-                this.#notificationService.stopTask(req.params.name)
-                res.status(204).send()
-            } catch (e) {
-                res.status(500).send(`${e}`)
-            }
-        })
+        this.#app.get("/tasks/:name/stop", wrap( async (req, res, next) => {
+            this.#notificationService.stopTask(req.params.name)
+            return res.status(204).json()
+        }))
 
-        this.#app.post("/tasks",  (req, res) => {
+        this.#app.post("/tasks", wrap( async (req, res, next) => {
             let task = null
             try {
                 task = Task.fromJson(JSON.stringify(req.body))
             } catch (e) {
-                res.status(400).send(`${e}`)
+                return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_BODY )).toJson())
             }
 
-            try {
-                if( this.#notificationService.addTask(task) === false ){
-                    res.status(400).send()
-                }
-                res.status(204).send()
-            } catch (e) {
-                res.status(500).send(`${e}`)
+            if( this.#notificationService.addTask(task) === false ){
+                return res.status(400).json((new ResponseError(ResponseError.TASK_EXISTS )).toJson())
             }
-            
-        })
+            return res.status(204).json()
+        }))
 
-        this.#app.put("/tasks/:name",  (req, res) => {
-            
+        this.#app.put("/tasks/:name", wrap( async (req, res, next) => {
             let task = null
 
             try {
                 task = Task.fromJson(JSON.stringify(req.body))
             }
             catch(e){
-                res.status(400).send(`${e}`)
+                return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_BODY)).toJson())
             }
 
-            try {
-                this.#notificationService.updateTask(req.params.name, task)
-                res.status(204).send()
-                //res.send( {success : status} )
+            if( this.#notificationService.updateTask(req.params.name, task) === false ){
+                return res.status(400).json((new ResponseError(ResponseError.NAME_NOT_FIND )).toJson())
             }
-            catch(e){
-                res.status(500).send(`${e}`)
-            }
-        })
+            return res.status(204).json()
+        }))
 
-        this.#app.delete("/tasks/:name",  (req, res) => {
+        this.#app.delete("/tasks/:name", wrap( async (req, res, next) => {
  
-            try {
-                if( this.#notificationService.deleteTask(req.params.name) === true ){
-                    res.status(204).send()
-                 }
-            } catch (e) {
-                res.status(500).send(`${e}`)
-            }
+            this.#notificationService.deleteTask(req.params.name)
+            return res.status(204).json()
+        }))
+
+        this.#app.use((err, req, res, next) => {
+            console.error(err.stack)
+            return res.status(500).send(`Internal Server Error\n${err.message}`)
         })
 
     }
