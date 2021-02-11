@@ -6,14 +6,15 @@ const { Variable, Variables } = require('../Models/Task/variable-vo.js')
 const { Schedule, Schedules } = require('../Models/Task/schedule-vo.js')
 const { Bot } = require('../Models/Task/bot-vo.js')
 const { Task } = require('../Models/Task/task-entity.js')
+const logger = require('../Utils/logger.js')
 
 
-const RepositoryFactory = class {
+const TaskRepositoryFactory = class {
     static createRepository = (type, options = {}) => {
         let repository = null
         switch (type) {
             case "json":
-                repository = new JsonRepository(options)
+                repository = new JsonTaskRepository(options)
                 break
             default:
                 throw new Error(`don't support repository type: ${type}`)
@@ -22,7 +23,7 @@ const RepositoryFactory = class {
     }
 }
 
-const BaseRepository = class {
+const BaseTaskRepository = class {
     #tasks
     constructor() {
         this.#tasks = []
@@ -69,7 +70,7 @@ const BaseRepository = class {
 
 }
 
-const JsonRepository = class extends BaseRepository {
+const JsonTaskRepository = class extends BaseTaskRepository {
     #path
     constructor(options) {
         super()
@@ -80,7 +81,7 @@ const JsonRepository = class extends BaseRepository {
 
         const _taskPush = (task) =>{
             if( this.tasks.some( target => target.name === task.name) ){
-                console.log("task.name is exists: ", task.name)
+                logger.error("task.name is exists: ", task.name)
                 return false
             }
             this.tasks.push(task)
@@ -88,18 +89,18 @@ const JsonRepository = class extends BaseRepository {
         } 
 
         if (!json.tasks) {
-            console.log("tasks is not exists: ", this.#path)
+            logger.error("tasks is not exists: ", this.#path)
             return false
         }
 
         for (let taskJson of json.tasks) {
             if (!taskJson.bot || !taskJson.bot.type || !taskJson.schedules) {
-                console.log("tasks[bot.type or schedules] is not exists: ", this.#path)
+                logger.error("tasks[bot.type or schedules] is not exists: ", this.#path)
                 return false
             }
             for (let schedule of taskJson.schedules) {
                 if (!schedule.mode || !schedule.cron || !schedule.texts) {
-                    console.log("tasks.schedule[mode or cron or texts] is not exists: ", this.#path)
+                    logger.error("tasks.schedule[mode or cron or texts] is not exists: ", this.#path)
                     return false
                 }
             }
@@ -139,6 +140,6 @@ const JsonRepository = class extends BaseRepository {
 
 
 module.exports = {
-    RepositoryFactory: RepositoryFactory,
-    JsonRepository: JsonRepository
+    TaskRepositoryFactory: TaskRepositoryFactory,
+    TaskJsonRepository: JsonTaskRepository
 }

@@ -1,6 +1,7 @@
 'use strict'
 
 const { WebClient } = require('@slack/web-api')
+const logger = require('../Utils/logger.js')
 
 const BotProviderFactory = class {
     static createBot = (type, options = {}) => {
@@ -37,7 +38,7 @@ const ConsoleBotProvider = class extends BaseBotProvider {
         this.#userName = userName
     }
     post = async (text) => {
-        const res = console.log(this.#userName, ": ", text)
+        const res = logger.info(`${this.#userName}: ${text}`)
         return res
     }
 }
@@ -67,7 +68,7 @@ const SlackBotProvider = class extends BaseBotProvider {
             })
             return res
         } catch (error) {
-            console.log("run error: ", error)
+            logger.error("run error: ", error)
         }
     }
 }

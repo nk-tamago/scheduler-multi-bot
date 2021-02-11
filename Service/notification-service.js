@@ -1,6 +1,7 @@
 'use strict'
 
-const { RepositoryFactory } = require('../Repository/repository.js')
+const { TaskRepositoryFactory } = require('../Repository/task-repository.js')
+const logger = require('../Utils/logger.js')
 
 const TaskRunner = class {
     #tasks
@@ -25,7 +26,6 @@ const TaskRunner = class {
         return true
     }
     update = (name, task) => {
-        //console.log(task)
         const index= this.#tasks.findIndex((t) => name === t.getName())
 
         if( index === -1 ){
@@ -98,17 +98,16 @@ const NotificationService = class {
     #repository
     #taskRunner = null
     constructor(config) {
-        this.#repository = RepositoryFactory.createRepository(config.repository.type, config.repository.options)
+        this.#repository = TaskRepositoryFactory.createRepository(config.repository.type, config.repository.options)
     }
     run = async () => {
 
         // データロード
         if (await this.#repository.load() === false) {
-            const massage = 'repository load error'
-            throw new Error(massage)
+            const message = 'repository load error'
+            logger.error(message)
+            throw new Error(message)
         }
-
-        // console.log(JSON.stringify( this.#repository.toJson(),undefined, 2))
 
         // タスク一覧の取得
         this.#taskRunner = new TaskRunner()

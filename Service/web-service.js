@@ -2,6 +2,9 @@ const express = require("express")
 const cors = require("cors")
 const bodyParser = require('body-parser');
 const { Task } = require('../Models/Task/task-entity.js')
+const logger = require('../Utils/logger.js')
+const morgan = require('morgan')
+
 
 const wrap = fn => (...args) => fn(...args).catch(args[2])
 
@@ -32,12 +35,16 @@ const ResponseError = class {
     static NAME_NOT_FIND = "Name not find"
     static TASK_EXISTS = "Task exists"
     static ILLEGAL_BODY = "Illegal body"
+    static ILLEGAL_PATH_PARAM = "Illegal path parameter"
+    static ILLEGAL_QUERY_PARAM = "Illegal query parameter"
     #message
-    constructor(message) {
+    #args
+    constructor(message, ...args) {
         this.#message = message
+        this.#args = args
     }
     toJson = () => {
-        return { message: this.#message }
+        return { message: this.#message, param: this.#args.join(",") }
     }
 }
 
@@ -53,12 +60,17 @@ const WebService = class {
         this.#app.use(bodyParser.urlencoded({
             extended: true
         }));
-        this.#app.use(bodyParser.json());
+        this.#app.use(bodyParser.json())
+        this.#app.use(morgan('tiny', {
+            stream: {
+              write: message => logger.http(message.trim()),
+            },
+          }))
         this.#tasks = []
     }
     run = () => {
-        this.#app.listen(process.env.PORT || 3000)
 
+          
         this.#app.get("/health", wrap( async (req, res, next) => {
             return res.json()
         }))
@@ -144,10 +156,106 @@ const WebService = class {
             return res.status(204).json()
         }))
 
+        this.#app.get("/logs/:date", wrap( async (req, res, next) => {
+            const parseDate = (str) => {
+                if( str.length !== 8 ){
+                    return null
+                }
+                const yyyy = parseInt(str.substr(0,4))
+                const mm = parseInt(str.substr(4,2))
+                const dd = parseInt(str.substr(6,2))
+
+                if( isNaN(yyyy) || isNaN(mm) || isNaN(dd) ){
+                    return null
+                }
+                // mmは0オリジンなので注意
+                return new Date(yyyy, mm-1, dd)
+            }
+
+            const getLimit = (query) => {
+                if( query.limit === undefined ){
+                    return 1000
+                }
+                const limit = parseInt(query.limit)
+                if( isNaN(limit) ){
+                    return null
+                } 
+                return limit
+            }
+
+            const getOrder = (query) => {
+                if( query.order === undefined || query.order === "desc" ){
+                    return "desc"
+                }
+                if(query.order === "asc"){
+                    return "asc"
+                }
+
+                return null
+            }
+
+            const getLevel = (query) => {
+                const levels = [ 
+                    "error",
+                    "warn",
+                    "info",
+                    "http",
+                    "verbose",
+                    "debug",
+                    "silly"
+                ]
+
+                if( query.level === undefined ){
+                    return ""
+                }
+                if( levels.some( (l) => l === query.level) === true ){
+                    return query.level
+                }
+                return null
+            }
+
+            const fromDate = parseDate(req.params.date)
+            if( fromDate === null ){
+                return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_PATH_PARAM )).toJson())
+            }
+
+            const limit = getLimit(req.query)
+            if( limit === null ){
+                return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_QUERY_PARAM, "limit")).toJson())
+            }
+
+            const order = getOrder(req.query)
+            if( order === null ){
+                return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_QUERY_PARAM, "order")).toJson())
+            }
+
+            const level = getLevel(req.query)
+            if( level === null ){
+                return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_QUERY_PARAM, "level")).toJson())
+            }
+
+            const options = {
+                from: fromDate.getTime(),
+                until: fromDate.getTime() + ((24 * 60 * 60 * 1000)-1),
+                limit: limit,
+                start: 0,
+                order: order,
+                level: level,
+                fields: ['timestamp','level','message']
+              }
+              
+              const results = await logger.query(options)
+              return res.json(results)
+           
+        }))
+
+
         this.#app.use((err, req, res, next) => {
-            console.error(err.stack)
+            logger.error(err.stack)
             return res.status(500).send(`Internal Server Error\n${err.message}`)
         })
+
+        this.#app.listen(process.env.PORT || 3000)
 
     }
 }

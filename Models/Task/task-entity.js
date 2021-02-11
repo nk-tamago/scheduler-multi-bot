@@ -5,6 +5,7 @@ const { TextConverter } = require('../../Utils/text-converter.js')
 const { Variable, Variables } = require('./variable-vo.js')
 const { Schedule, Schedules } = require('./schedule-vo.js')
 const { Bot } = require('./bot-vo.js')
+const logger = require('../../Utils/logger.js')
 
 
 const Task = class {
@@ -49,11 +50,9 @@ const Task = class {
             schedules.add(schedule)
         }
 
-
         const task = new Task(taskJson.name, bot, variables, schedules)
 
         return task
-
     }
 
     setBot = (bot) => {
@@ -100,7 +99,7 @@ const Task = class {
         const sequenceRun = (texts, textConverter) => {
             let index = 0
             return async () => {
-                const res = await this.#bot.provider.post(textConverter.convert(texts[index]))
+                await this.#bot.provider.post(textConverter.convert(texts[index]))
 
                 index++
                 if (texts.length === index) {
@@ -112,17 +111,19 @@ const Task = class {
             return async () => {
                 const index = Math.floor(Math.random() * texts.length)
 
-                const res = await this.#bot.provider.post(textConverter.convert(texts[index]))
+                await this.#bot.provider.post(textConverter.convert(texts[index]))
             }
         }
 
         if( this.isJobs() ){
-            const massage = `run tasks: ${this.getName()}`
-            throw new Error(massage)
+            const message = `run tasks: ${this.getName()}`
+            logger.error(message)
+            return []
         }
         if( !this.canStart() ){
-            const massage = `can't task start: ${this.getName()}`
-            throw new Error(massage)
+            const message = `can't task start: ${this.getName()}`
+            logger.error(message)
+            return []
         }
 
 
@@ -151,8 +152,8 @@ const Task = class {
                 this.#jobs.push(job)
 
             } catch (error) {
-                const massage = `job error: ${error}`
-                throw new Error(massage)
+                const message = `job error: ${error}`
+                throw new Error(message)
             }
         })
 
