@@ -1,7 +1,7 @@
 'use strict'
 
 const { WebClient } = require('@slack/web-api')
-const logger = require('../Utils/logger.js')
+const { logger } = require('../Utils/logger.js')
 
 const BotProviderFactory = class {
     static createBot = (type, options = {}) => {

@@ -5,7 +5,7 @@ const { TextConverter } = require('../../Utils/text-converter.js')
 const { Variable, Variables } = require('./variable-vo.js')
 const { Schedule, Schedules } = require('./schedule-vo.js')
 const { Bot } = require('./bot-vo.js')
-const logger = require('../../Utils/logger.js')
+const { logger } = require('../../Utils/logger.js')
 
 
 const Task = class {

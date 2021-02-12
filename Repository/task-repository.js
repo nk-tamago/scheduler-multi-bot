@@ -6,7 +6,7 @@ const { Variable, Variables } = require('../Models/Task/variable-vo.js')
 const { Schedule, Schedules } = require('../Models/Task/schedule-vo.js')
 const { Bot } = require('../Models/Task/bot-vo.js')
 const { Task } = require('../Models/Task/task-entity.js')
-const logger = require('../Utils/logger.js')
+const { logger } = require('../Utils/logger.js')
 
 
 const TaskRepositoryFactory = class {

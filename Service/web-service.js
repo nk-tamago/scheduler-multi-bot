@@ -2,7 +2,7 @@ const express = require("express")
 const cors = require("cors")
 const bodyParser = require('body-parser');
 const { Task } = require('../Models/Task/task-entity.js')
-const logger = require('../Utils/logger.js')
+const { logger, Logger } = require('../Utils/logger.js')
 const morgan = require('morgan')
 
 
@@ -195,20 +195,10 @@ const WebService = class {
             }
 
             const getLevel = (query) => {
-                const levels = [ 
-                    "error",
-                    "warn",
-                    "info",
-                    "http",
-                    "verbose",
-                    "debug",
-                    "silly"
-                ]
-
                 if( query.level === undefined ){
                     return ""
                 }
-                if( levels.some( (l) => l === query.level) === true ){
+                if( Logger.levels.some( (l) => l === query.level) === true ){
                     return query.level
                 }
                 return null

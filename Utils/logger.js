@@ -8,6 +8,16 @@ const format = winston.format
 const Logger = class {
     #logger
 
+    static levels = [ 
+        "error",
+        "warn",
+        "info",
+        "http",
+        "verbose",
+        "debug",
+        "silly"
+    ]
+
     constructor( options = {level:'info', dir:'Logs'} ) {
       this.#logger = winston.createLogger({
         level: options.level,
@@ -86,4 +96,7 @@ const Logger = class {
 const logger = new Logger(config.logger.options)
 Object.freeze(logger)
 
-module.exports = logger
+module.exports = {
+    Logger: Logger,
+    logger: logger
+}

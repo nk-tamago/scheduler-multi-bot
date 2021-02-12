@@ -1,7 +1,7 @@
 'use strict'
 
 const { TaskRepositoryFactory } = require('../Repository/task-repository.js')
-const logger = require('../Utils/logger.js')
+const { logger } = require('../Utils/logger.js')
 
 const TaskRunner = class {
     #tasks

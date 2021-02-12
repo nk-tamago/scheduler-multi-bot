@@ -7,7 +7,7 @@ if (process.argv.length !== 3) {
 
 const NotificationService = require('./Service/notification-service.js')
 const WebService = require('./Service/web-service.js')
-const logger = require('./Utils/logger.js')
+const { logger } = require('./Utils/logger.js')
 const config = require('./Utils/config-loader.js')
 
 
