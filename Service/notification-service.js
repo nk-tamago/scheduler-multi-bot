@@ -91,6 +91,17 @@ const TaskRunner = class {
 
         return true
     }
+    restart = (name) => {
+        const task = this.getTask(name)
+
+        if( task === undefined){
+            return false
+        }
+        task.restart()
+
+        return true
+    }
+   
     
 }
 
@@ -168,12 +179,18 @@ const NotificationService = class {
             return false
         }
 
+        this.#repository.addTask(task)
+        this.#repository.save()
+
         return this.#taskRunner.add(task)
     }
     updateTask = (name, task) =>{
         if(this.#taskRunner === null) {
             return false
         }
+
+        this.#repository.updateTask(name, task)
+        this.#repository.save()
 
         return this.#taskRunner.update(name, task)
     }
@@ -182,6 +199,8 @@ const NotificationService = class {
             return false
         }
 
+        this.#repository.deleteTask(name)
+        this.#repository.save()
         return this.#taskRunner.delete(name)
     }
     startTask = (name) => {
@@ -201,6 +220,7 @@ const NotificationService = class {
     }
     importJson = (json) => {
         this.#repository.fromJson(json)
+        this.#repository.save()
         const tasks = this.#repository.getTasks()
         this.#taskRunner.clear()
         for (let task of tasks) {

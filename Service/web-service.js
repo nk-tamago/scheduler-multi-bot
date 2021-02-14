@@ -44,6 +44,7 @@ const ResponseError = class {
         this.#args = args
     }
     toJson = () => {
+        logger.error( `message:${this.#message}, param:${this.#args.join(",")}`)
         return { message: this.#message, param: this.#args.join(",") }
     }
 }
@@ -70,7 +71,6 @@ const WebService = class {
     }
     run = () => {
 
-          
         this.#app.get("/health", wrap( async (req, res, next) => {
             return res.json()
         }))
@@ -123,9 +123,9 @@ const WebService = class {
         this.#app.post("/tasks", wrap( async (req, res, next) => {
             let task = null
             try {
-                task = Task.fromJson(JSON.stringify(req.body))
+                task = Task.fromJson(req.body)
             } catch (e) {
-                return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_BODY )).toJson())
+                return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_BODY, e)).toJson())
             }
 
             if( this.#notificationService.addTask(task) === false ){
@@ -138,7 +138,7 @@ const WebService = class {
             let task = null
 
             try {
-                task = Task.fromJson(JSON.stringify(req.body))
+                task = Task.fromJson(req.body)
             }
             catch(e){
                 return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_BODY)).toJson())
@@ -151,7 +151,7 @@ const WebService = class {
         }))
 
         this.#app.delete("/tasks/:name", wrap( async (req, res, next) => {
- 
+
             this.#notificationService.deleteTask(req.params.name)
             return res.status(204).json()
         }))
@@ -245,7 +245,6 @@ const WebService = class {
         }))
 
         this.#app.post("/import", wrap( async (req, res, next) => {
-
             if( this.#notificationService.importJson(req.body) === false ){
                 return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_BODY)).toJson())
             }
