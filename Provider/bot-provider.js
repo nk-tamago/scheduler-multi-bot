@@ -1,6 +1,7 @@
 'use strict'
 
 const { WebClient } = require('@slack/web-api')
+const { logger } = require('../Utils/logger.js')
 
 const BotProviderFactory = class {
     static createBot = (type, options = {}) => {
@@ -9,18 +10,18 @@ const BotProviderFactory = class {
             case "slack":
                 // todo 入力チェック
                 if (!options.slack || !options.slack.token || !options.slack.channelId) {
-                    throw "options.slack or slack[token or channelId] is not exists"
+                    throw new Error("options.slack or slack[token or channelId] is not exists")
                 }
                 bot = new SlackBotProvider(options.slack.token, options.slack.channelId, options.slack.userName, options.slack.iconUrl)
                 break
             case "debug":
                 if (!options.debug) {
-                    throw "options.debug is not exists"
+                    throw new Error("options.debug is not exists")
                 }
                 bot = new ConsoleBotProvider(options.debug.userName)
                 break
             default:
-                throw `don't support bot type: ${type}`
+                throw new Error(`don't support bot type: ${type}`)
         }
         return bot
     }
@@ -37,7 +38,7 @@ const ConsoleBotProvider = class extends BaseBotProvider {
         this.#userName = userName
     }
     post = async (text) => {
-        const res = console.log(this.#userName, ": ", text)
+        const res = logger.info(`${this.#userName}: ${text}`)
         return res
     }
 }
@@ -50,7 +51,7 @@ const SlackBotProvider = class extends BaseBotProvider {
     constructor(token, channelId, userName, iconUrl) {
         super()
         if (!token || !channelId) {
-            throw "input error: slack bot"
+            throw new Error("input error: slack bot")
         }
         this.#channelId = channelId
         this.#userName = userName
@@ -67,7 +68,7 @@ const SlackBotProvider = class extends BaseBotProvider {
             })
             return res
         } catch (error) {
-            console.log("run error: ", error)
+            logger.error("run error: ", error)
         }
     }
 }

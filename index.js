@@ -6,28 +6,28 @@ if (process.argv.length !== 3) {
 }
 
 const NotificationService = require('./Service/notification-service.js')
-const fs = require('fs')
+const WebService = require('./Service/web-service.js')
+const { logger } = require('./Utils/logger.js')
+const config = require('./Utils/config-loader.js')
 
-const appConfg = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'))
+
 
 const main = async (appConfg) => {
+    
+    logger.info("start")
 
-    console.log("start")
+    const notificationService = new NotificationService(appConfg)
+    await notificationService.run()
 
-    if (!appConfg.repository || !appConfg.repository.type || !appConfg.repository.options) {
-        console.log("config error: repository not exists")
-        return
+    const webService = new WebService(notificationService)
+    webService.run()
+}
+
+(async () =>{
+    try {
+        await main(config)
     }
-
-    const service = new NotificationService(appConfg)
-    await service.runTasks()
-
-    console.log("end")
-}
-
-try {
-    main(appConfg)
-}
-catch (error) {
-    console.log("main error: ", error)
-}
+    catch (e){
+        logger.error("main error: ", e)
+    }
+})()

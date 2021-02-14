@@ -4,5 +4,11 @@
         "options": {
             "path": "./repository-example.json"
         }
+    },
+    "logger" :{
+        "options" : {
+            "level" : "info",
+            "dir" : "Logs"
+        }
     }
 }
