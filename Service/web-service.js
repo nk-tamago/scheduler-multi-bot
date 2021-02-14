@@ -239,6 +239,18 @@ const WebService = class {
            
         }))
 
+        this.#app.get("/export", wrap( async (req, res, next) => {
+            const results = this.#notificationService.exportJson()
+            return res.json( results )
+        }))
+
+        this.#app.post("/import", wrap( async (req, res, next) => {
+
+            if( this.#notificationService.importJson(req.body) === false ){
+                return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_BODY)).toJson())
+            }
+            return res.status(204).json()
+        }))
 
         this.#app.use((err, req, res, next) => {
             logger.error(err.stack)

@@ -67,7 +67,18 @@ const BaseTaskRepository = class {
             this.#tasks[index] = task
         }
     }
+    fromJson = (json) => {
 
+        if( json.tasks === undefined || Array.isArray(json.tasks) === false ){
+            throw new Error(`[tasks] is not exists or is not Array`)
+        }
+
+        const tasks = json.tasks.map( (task) => {
+            return Task.fromJson(JSON.stringify(task))
+        })
+
+        this.setTasks(tasks)
+    }
 }
 
 const JsonTaskRepository = class extends BaseTaskRepository {

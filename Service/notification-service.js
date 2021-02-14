@@ -8,7 +8,7 @@ const TaskRunner = class {
     constructor() {
         this.#tasks = []
     }
-    get tasks() {
+    gettasks = () => {
         return this.#tasks
     }
     getTask = (name) => {
@@ -53,7 +53,7 @@ const TaskRunner = class {
 
     }
     clear = () => {
-        this.stop()
+        this.stopAll()
         this.#tasks = []
     }
     startAll = () => {
@@ -139,7 +139,7 @@ const NotificationService = class {
             return []
         }
 
-        const status = this.#taskRunner.tasks.map( (task)=>{
+        const status = this.#taskRunner.gettasks().map( (task)=>{
             return { name: task.getName(), status: task.getStatus() }
         })
 
@@ -150,14 +150,14 @@ const NotificationService = class {
             return []
         }
 
-        return this.#taskRunner.tasks
+        return this.#taskRunner.gettasks()
     }
     getTask = ( name ) => {
         if(this.#taskRunner === null) {
             return {}
         }
 
-        const task = this.#taskRunner.tasks.find((t) => {
+        const task = this.#taskRunner.gettasks().find((t) => {
             return (name === t.getName())
         })
         return task ? task: undefined
@@ -184,17 +184,6 @@ const NotificationService = class {
 
         return this.#taskRunner.delete(name)
     }
-    upsertTask = (name, task) => {
-        if(this.#taskRunner === null) {
-            return false
-        }
-        if( this.#taskRunner.exists(name) === true ){
-            return this.updateTask(name, task)
-        }
-        else {
-            return this.addTask(task)
-        }
-    }
     startTask = (name) => {
         if(this.#taskRunner === null) {
             return false
@@ -206,6 +195,18 @@ const NotificationService = class {
             return false
         }
         return this.#taskRunner.stop(name)
+    }
+    exportJson = () => {
+        return this.#repository.toJson()
+    }
+    importJson = (json) => {
+        this.#repository.fromJson(json)
+        const tasks = this.#repository.getTasks()
+        this.#taskRunner.clear()
+        for (let task of tasks) {
+            this.#taskRunner.add(task)
+        }
+        this.#taskRunner.startAll()
     }
 
 }
