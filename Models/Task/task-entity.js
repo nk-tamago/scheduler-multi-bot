@@ -22,35 +22,33 @@ const Task = class {
         this.#jobs = []
     }
 
-    static fromJson = ( jsonString ) => {
-        const taskJson = JSON.parse( jsonString )
-
-        if (!taskJson.bot || !taskJson.bot.type || !taskJson.schedules) {
+    static fromJson = ( json ) => {
+        if (!json.bot || !json.bot.type || !json.schedules) {
             throw new Error(`[bot.type or schedules] is not exists`)
         }
-        for (let schedule of taskJson.schedules) {
+        for (let schedule of json.schedules) {
             if (!schedule.mode || !schedule.cron || !schedule.texts) {
                 throw new Error(`schedule[mode or cron or texts] is not exists`)
             }
         }
 
-        const bot = new Bot(taskJson.bot.type, taskJson.bot.options)
+        const bot = new Bot(json.bot.type, json.bot.options)
         const variables = new Variables()
 
-        if (taskJson.variables) {
-            for (let variableJson of taskJson.variables) {
+        if (json.variables) {
+            for (let variableJson of json.variables) {
                 const variable = new Variable(variableJson.type, variableJson.key, variableJson.value)
                 variables.add(variable)
             }
         }
 
         const schedules = new Schedules()
-        for (let scheduleJson of taskJson.schedules) {
+        for (let scheduleJson of json.schedules) {
             const schedule = new Schedule(scheduleJson.mode, scheduleJson.cron, scheduleJson.texts)
             schedules.add(schedule)
         }
 
-        const task = new Task(taskJson.name, bot, variables, schedules)
+        const task = new Task(json.name, bot, variables, schedules)
 
         return task
     }
@@ -96,6 +94,7 @@ const Task = class {
         return true
     }
     start = () => {
+        console.debug(`Task.start(${this.#name})`)
         const sequenceRun = (texts, textConverter) => {
             let index = 0
             return async () => {
@@ -160,12 +159,14 @@ const Task = class {
         return this.#jobs
     }
     stop = () => {
+        console.debug(`Task.stop(${this.#name})`)
         for (let job of this.#jobs) {
             job.cancel()
         }
         this.#jobs = []
     }
     restart = () => {
+        console.debug(`Task.restart(${this.#name})`)
         this.stop()
         this.start()
     }

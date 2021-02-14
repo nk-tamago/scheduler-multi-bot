@@ -67,6 +67,16 @@ const BaseTaskRepository = class {
             this.#tasks[index] = task
         }
     }
+    deleteTask = (name) =>{
+        const index = this.#tasks.findIndex( (t) =>{
+            return t.getName() === name
+        })
+
+        if(index >= 0){
+            this.#tasks.splice(index, 1)
+        }
+
+    }
     fromJson = (json) => {
 
         if( json.tasks === undefined || Array.isArray(json.tasks) === false ){
@@ -90,21 +100,17 @@ const JsonTaskRepository = class extends BaseTaskRepository {
     load = async () => {
         const json = JSON.parse(fs.readFileSync(this.#path, 'utf8'))
 
-        const _taskPush = (task) =>{
-            if( this.tasks.some( target => target.name === task.name) ){
-                logger.error("task.name is exists: ", task.name)
-                return false
-            }
-            this.tasks.push(task)
-            return true
-        } 
-
         if (!json.tasks) {
             logger.error("tasks is not exists: ", this.#path)
             return false
         }
 
         for (let taskJson of json.tasks) {
+            if( this.tasks.some( t => t.name === taskJson.name) === true ){
+                logger.error("task.name is exists: ", task.name)
+                return false
+            }
+
             if (!taskJson.bot || !taskJson.bot.type || !taskJson.schedules) {
                 logger.error("tasks[bot.type or schedules] is not exists: ", this.#path)
                 return false
@@ -135,16 +141,14 @@ const JsonTaskRepository = class extends BaseTaskRepository {
 
             const task = new Task(taskJson.name, bot, variables, schedules)
 
-            if( !_taskPush(task) ){
-                return false
-            }
+            this.tasks.push(task)
         }
 
 
         return true
     }
     save = async () => {
-        const json = await this.getAllByJson()
+        const json = await this.toJson()
         fs.writeFileSync(this.#path, JSON.stringify(json, undefined, 2), 'utf8')
     }
 }
