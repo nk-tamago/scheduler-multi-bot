@@ -1,7 +1,7 @@
 {
   "tasks": [
     {
-      "bot" : {
+      "bot": {
         "type": "slack",
         "options": {
           "slack": {
@@ -41,7 +41,7 @@
       ]
     },
     {
-      "bot" :{
+      "bot": {
         "type": "debug",
         "options": {
           "debug": {
