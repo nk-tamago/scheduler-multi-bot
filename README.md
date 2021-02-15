@@ -137,61 +137,62 @@ REST APIを使用してスケジュールの登録、編集、削除が出来ま
 | /export | GET | - | - | JSON | 登録されているタスクをimport出来る形式で取得します |
 | /import | POST | - | JSON | JSON | exportで取得されたデータに差し替えます |
 <br>
+
 ## Body Example
+
 - [POST, PUT] /tasks
   - 上記の json-repositoryファイル のtasks内と同じフォーマットです
-
-  ```JSON
-  {
-    "name": "example",
-    "bot": {
-      "type": "slack",
-      "options": {
-        "slack": {
-          "channelId": "",
-          "token": "",
-          "userName": "template user",
-          "iconUrl": "https://example/example.png"
-        },
-        "debug": {
-          "userName": "template user"
+  - ```JSON
+    {
+      "name": "example",
+      "bot": {
+        "type": "slack",
+        "options": {
+          "slack": {
+            "channelId": "",
+            "token": "",
+            "userName": "template user",
+            "iconUrl": "https://example/example.png"
+          },
+          "debug": {
+            "userName": "template user"
+          }
         }
-      }
-    },
-    "variables": [
-      {
-        "type": "static",
-        "key": "template1",
-        "value": "temp1"
       },
-      {
-        "type": "dynamic",
-        "key": "template2",
-        "value": "return 'temp2'"
-      }
-    ],
-    "schedules": [
-      {
-        "mode": "sequence",
-        "cron": "*/1 * * * 1,2,3,4,5,6,7",
-        "texts": [
-          "sequence push ：${template1}",
-          "sequence push ：${template2}",
-          "sequence push ：temp3"
-        ]
-      },
-      {
-        "mode": "random",
-        "cron": "*/1 * * * 1,2,3,4,5,6,7",
-        "texts": [
-          "random push ：${template1}",
-          "random push ：${template2}",
-          "random push ：temp3"
-        ]
-      }
-    ]
-  }
-  ```
+      "variables": [
+        {
+          "type": "static",
+          "key": "template1",
+          "value": "temp1"
+        },
+        {
+          "type": "dynamic",
+          "key": "template2",
+          "value": "return 'temp2'"
+        }
+      ],
+      "schedules": [
+        {
+          "mode": "sequence",
+          "cron": "*/1 * * * 1,2,3,4,5,6,7",
+          "texts": [
+            "sequence push ：${template1}",
+            "sequence push ：${template2}",
+            "sequence push ：temp3"
+          ]
+        },
+        {
+          "mode": "random",
+          "cron": "*/1 * * * 1,2,3,4,5,6,7",
+          "texts": [
+            "random push ：${template1}",
+            "random push ：${template2}",
+            "random push ：temp3"
+          ]
+        }
+      ]
+    }
+    ```
 - [POST] /import
   - 上記の json-repositoryファイル と同じフォーマットです
 
