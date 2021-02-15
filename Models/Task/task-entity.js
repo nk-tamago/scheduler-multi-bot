@@ -23,6 +23,7 @@ const Task = class {
     }
 
     static fromJson = ( json ) => {
+        
         if (!json.bot || !json.bot.type || !json.schedules) {
             throw new Error(`[bot.type or schedules] is not exists`)
         }
@@ -94,7 +95,7 @@ const Task = class {
         return true
     }
     start = () => {
-        console.debug(`Task.start(${this.#name})`)
+        logger.debug(`Task.start(${this.#name})`)
         const sequenceRun = (texts, textConverter) => {
             let index = 0
             return async () => {

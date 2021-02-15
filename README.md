@@ -15,19 +15,30 @@ scheduler-multi-bot requires the following to run:
 node index.js [configfile]
 
 ## configfileについて
-- `repository.type` は現在 `json` のみ対応しています
-- `repository.options.path` は下記で説明するrepositoryファイルを指定してください
+- `repository.type` は現在 `json`と`nedb` (推奨)のみ対応しています
+- `json` の場合は `repository.options.json.path` に下記で説明する保存先json-repositoryファイルを指定してください
+  - 起動後にWebAPIで登録する場合は 空( `[]` )でも問題ありません
+- `nedb` の場合は `repository.options.nedb.path` に保存先のdatabaseファイルを指定してください
+  - 初回起動時はdatabaseファイルが新規作成されます
 ```json
 {
   "repository": {
-    "type": "json",
+    "type": "nedb",
     "options": {
-      "path": "./repository-example.json"
+      "json": {
+        "path": "./repository-example.json"
+      },
+      "nedb": {
+        "path": "./repository-example.db"
+      }
     }
   }
 }
 ```
-## repositoryファイル
+## json-repositoryファイル
+- `repository.type` が `json` の時のみ有効となります
+- WebAPIにて更新されますが、以下のルールで任意に作成することも出来ます
+- `tasks.name` は必須一意となる名前を指定してください
 - `tasks.bot.type` は現在 `slack` or `debug` が指定できます。`debug` を指定するとコンソールに表示します
   - `tasks.bot.options` は `tasks.bot.type` によって設定する内容が異なります
   - ```json
@@ -63,6 +74,7 @@ node index.js [configfile]
 {
   "tasks": [
     {
+      "name": "example",
       "bot" : {
         "type": "slack",
         "options": {

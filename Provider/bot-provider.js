@@ -28,7 +28,7 @@ const BotProviderFactory = class {
 }
 
 const BaseBotProvider = class {
-    post = async (text) => { }
+    async post(text) { }
 }
 
 const ConsoleBotProvider = class extends BaseBotProvider {
