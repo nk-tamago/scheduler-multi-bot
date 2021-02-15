@@ -1,5 +1,6 @@
 # scheduler-multi-bot
-slackなどへ指定した日時に投稿するタスクスケジューラーです
+slackなどへ指定した日時に投稿するタスクスケジューラーです<br>
+REST APIでスケジュールの登録、編集、削除することが出来ます
 
 # Install
 ```sh
@@ -118,8 +119,86 @@ node index.js [configfile]
 }
 
 ```
+# REST API
+REST APIを使用してスケジュールの登録、編集、削除が出来ます
 
-## Example
+| URL | Method | Query Params | Body | Result | Description |
+| - | - | - | - | - | - |
+| /status | GET | - | - | JSON | 登録されているタスクと状態を取得します |
+| /status/:name | GET | - | - | JSON | 指定されたタスクの状態を取得します |
+| /tasks | GET | - | - | JSON | 登録されているタスクを取得します |
+| /tasks/:name | GET | - | - | JSON | 指定されたタスクを取得します |
+| /tasks/:name/start | GET | - | - | - | 指定されたタスクを開始します |
+| /tasks/:name/stop | GET | - | - | - | 指定されたタスクを停止します |
+| /tasks | POST | - | JSON | - | タスクを新規登録します |
+| /tasks/:name | PUT | - | JSON | - | 指定されたタスクを更新します |
+| /tasks/:name | DELETE | - | - | - | 指定されたタスクを削除します |
+| /logs/:date | GET | limit=[1-1000]<br>order=["desc","asc"]<br>level=[※1]| - | JSON | 指定された年月日[YYYYMMDD]でログを取得します<br>(※1)level=["error","warn","info","http","verbose","debug","silly"]|
+| /export | GET | - | - | JSON | 登録されているタスクをimport出来る形式で取得します |
+| /import | POST | - | JSON | JSON | exportで取得されたデータに差し替えます |
+<br>
+## Body Example
+- [POST, PUT] /tasks
+  - 上記の json-repositoryファイル のtasks内と同じフォーマットです
+
+  ```JSON
+  {
+    "name": "example",
+    "bot": {
+      "type": "slack",
+      "options": {
+        "slack": {
+          "channelId": "",
+          "token": "",
+          "userName": "template user",
+          "iconUrl": "https://example/example.png"
+        },
+        "debug": {
+          "userName": "template user"
+        }
+      }
+    },
+    "variables": [
+      {
+        "type": "static",
+        "key": "template1",
+        "value": "temp1"
+      },
+      {
+        "type": "dynamic",
+        "key": "template2",
+        "value": "return 'temp2'"
+      }
+    ],
+    "schedules": [
+      {
+        "mode": "sequence",
+        "cron": "*/1 * * * 1,2,3,4,5,6,7",
+        "texts": [
+          "sequence push ：${template1}",
+          "sequence push ：${template2}",
+          "sequence push ：temp3"
+        ]
+      },
+      {
+        "mode": "random",
+        "cron": "*/1 * * * 1,2,3,4,5,6,7",
+        "texts": [
+          "random push ：${template1}",
+          "random push ：${template2}",
+          "random push ：temp3"
+        ]
+      }
+    ]
+  }
+  ```
+- [POST] /import
+  - 上記の json-repositoryファイル と同じフォーマットです
+
+<br>
+
+
+# Example
 ```sh
 $ node .\index.js .\config-example.json
 ```
