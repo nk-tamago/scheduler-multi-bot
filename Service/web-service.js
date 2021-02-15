@@ -245,10 +245,13 @@ const WebService = class {
         }))
 
         this.#app.post("/import", wrap( async (req, res, next) => {
-            if( this.#notificationService.importJson(req.body) === false ){
+            try {
+                const count = this.#notificationService.importJson(req.body)
+                return res.json({count:count})
+            }
+            catch(err){
                 return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_BODY)).toJson())
             }
-            return res.status(204).json()
         }))
 
         this.#app.use((err, req, res, next) => {

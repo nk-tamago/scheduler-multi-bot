@@ -1,6 +1,6 @@
 'use strict'
 
-const { TaskRepositoryFactory } = require('../Repository/task-repository.js')
+const { TaskRepositoryFactory } = require('../Repository/repository-factory.js')
 const { logger } = require('../Utils/logger.js')
 
 const TaskRunner = class {
@@ -36,8 +36,6 @@ const TaskRunner = class {
 
         this.#tasks[index] = task
 
-        this.#tasks[index].start()
-
         return true
     }
     delete = (name) => {
@@ -52,7 +50,7 @@ const TaskRunner = class {
         return true
 
     }
-    clear = () => {
+    clearAll = () => {
         this.stopAll()
         this.#tasks = []
     }
@@ -180,7 +178,6 @@ const NotificationService = class {
         }
 
         this.#repository.addTask(task)
-        this.#repository.save()
 
         return this.#taskRunner.add(task)
     }
@@ -190,7 +187,6 @@ const NotificationService = class {
         }
 
         this.#repository.updateTask(name, task)
-        this.#repository.save()
 
         return this.#taskRunner.update(name, task)
     }
@@ -200,7 +196,7 @@ const NotificationService = class {
         }
 
         this.#repository.deleteTask(name)
-        this.#repository.save()
+
         return this.#taskRunner.delete(name)
     }
     startTask = (name) => {
@@ -220,13 +216,14 @@ const NotificationService = class {
     }
     importJson = (json) => {
         this.#repository.fromJson(json)
-        this.#repository.save()
         const tasks = this.#repository.getTasks()
-        this.#taskRunner.clear()
+        
+        this.#taskRunner.clearAll()
         for (let task of tasks) {
             this.#taskRunner.add(task)
         }
-        this.#taskRunner.startAll()
+
+        return tasks.length
     }
 
 }
