@@ -9,20 +9,6 @@ const { Task } = require('../Models/Task/task-entity.js')
 const { logger } = require('../Utils/logger.js')
 
 
-const TaskRepositoryFactory = class {
-    static createRepository = (type, options = {}) => {
-        let repository = null
-        switch (type) {
-            case "json":
-                repository = new JsonTaskRepository(options)
-                break
-            default:
-                throw new Error(`don't support repository type: ${type}`)
-        }
-        return repository
-    }
-}
-
 const BaseTaskRepository = class {
     #tasks
     constructor() {
@@ -31,24 +17,22 @@ const BaseTaskRepository = class {
     get tasks() {
         return this.#tasks
     }
-
-    load = async () => {
+    setTasks(tasks) {
         this.#tasks = []
-    }
-    save = async () => { }
-    getTasks = () => {
-        return this.#tasks
-    }
-    setTasks = (tasks) => {
         this.#tasks = tasks
     }
-    addTask = (task) => {
+
+    async save() {}
+    async load() {}
+    getTasks() {
+        return this.#tasks
+    }
+    async addTask(task) {
+        logger.debug(`BaseTaskRepository.addtask(${task.getName()})`)
         this.#tasks.push(task)
+        await this.save()
     }
-    clear = () => {
-        this.#tasks = []
-    }
-    toJson = () => {
+    toJson() {
         const json = {}
         json.tasks = []
         for (let task of this.#tasks) {
@@ -58,7 +42,7 @@ const BaseTaskRepository = class {
         return json
 
     }
-    updateTask = (name, task) =>{
+    async updateTask(name, task) {
         const index = this.#tasks.findIndex( (t) =>{
             return t.getName() === name
         })
@@ -66,8 +50,11 @@ const BaseTaskRepository = class {
         if(index >= 0){
             this.#tasks[index] = task
         }
+
+        await this.save()
+
     }
-    deleteTask = (name) =>{
+    async deleteTask (name) {
         const index = this.#tasks.findIndex( (t) =>{
             return t.getName() === name
         })
@@ -76,18 +63,22 @@ const BaseTaskRepository = class {
             this.#tasks.splice(index, 1)
         }
 
+        await this.save()
     }
-    fromJson = (json) => {
+    async fromJson (json) {
 
         if( json.tasks === undefined || Array.isArray(json.tasks) === false ){
             throw new Error(`[tasks] is not exists or is not Array`)
         }
 
         const tasks = json.tasks.map( (task) => {
-            return Task.fromJson(JSON.stringify(task))
+            return Task.fromJson(task)
         })
 
         this.setTasks(tasks)
+        await this.save()
+
+        return tasks.length
     }
 }
 
@@ -95,19 +86,24 @@ const JsonTaskRepository = class extends BaseTaskRepository {
     #path
     constructor(options) {
         super()
-        this.#path = options.path
+
+        if( !options.json || !options.json.path ){
+            throw new Error("config error: repository.options.json.path not exists")
+        }
+        this.#path = options.json.path
     }
     load = async () => {
         const json = JSON.parse(fs.readFileSync(this.#path, 'utf8'))
+        const tasks = []
 
         if (!json.tasks) {
-            logger.error("tasks is not exists: ", this.#path)
-            return false
+            logger.warn("tasks is not exists: ", this.#path)
+            return true
         }
 
         for (let taskJson of json.tasks) {
             if( this.tasks.some( t => t.name === taskJson.name) === true ){
-                logger.error("task.name is exists: ", task.name)
+                logger.error("task.name is exists: ", taskJson.name)
                 return false
             }
 
@@ -138,23 +134,22 @@ const JsonTaskRepository = class extends BaseTaskRepository {
                 schedules.add(schedule)
             }
 
-
-            const task = new Task(taskJson.name, bot, variables, schedules)
-
-            this.tasks.push(task)
+            tasks.push( new Task(taskJson.name, bot, variables, schedules) )
         }
 
+        this.setTasks(tasks)
 
         return true
     }
     save = async () => {
         const json = await this.toJson()
         fs.writeFileSync(this.#path, JSON.stringify(json, undefined, 2), 'utf8')
+
     }
 }
 
 
 module.exports = {
-    TaskRepositoryFactory: TaskRepositoryFactory,
-    TaskJsonRepository: JsonTaskRepository
+    BaseTaskRepository: BaseTaskRepository,
+    JsonTaskRepository: JsonTaskRepository
 }

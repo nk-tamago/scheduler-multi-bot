@@ -14,7 +14,7 @@ const config = require('./Utils/config-loader.js')
 
 const main = async (appConfg) => {
     
-    logger.info("start")
+    logger.debug("start")
 
     const notificationService = new NotificationService(appConfg)
     await notificationService.run()

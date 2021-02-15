@@ -1,14 +1,19 @@
 {
-    "repository": {
-        "type": "json",
-        "options": {
-            "path": "./repository-example.json"
-        }
-    },
-    "logger" :{
-        "options" : {
-            "level" : "info",
-            "dir" : "Logs"
-        }
+  "repository": {
+    "type": "nedb",
+    "options": {
+      "json": {
+        "path": "./repository-example.json"
+      },
+      "nedb": {
+        "path": "./repository-example.db"
+      }
     }
+  },
+  "logger": {
+    "options": {
+      "level": "info",
+      "dir": "Logs"
+    }
+  }
 }
