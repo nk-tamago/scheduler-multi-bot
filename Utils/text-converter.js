@@ -2,7 +2,7 @@
 
 const { Variable } = require('../Models/Task/variable-vo.js')
 
-const TextConverter = class {
+class TextConverter {
     #variables
     constructor() {
         this.#variables = []

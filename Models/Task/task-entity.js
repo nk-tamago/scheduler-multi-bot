@@ -8,7 +8,7 @@ const { Bot } = require('./bot-vo.js')
 const { logger } = require('../../Utils/logger.js')
 
 
-const Task = class {
+class Task {
     #name
     #bot
     #variables
@@ -22,7 +22,7 @@ const Task = class {
         this.#jobs = []
     }
 
-    static fromJson = ( json ) => {
+    static fromJson(json) {
         
         if (!json.bot || !json.bot.type || !json.schedules) {
             throw new Error(`[bot.type or schedules] is not exists`)
@@ -54,32 +54,32 @@ const Task = class {
         return task
     }
 
-    setBot = (bot) => {
+    setBot(bot) {
         this.#bot = bot
     }
-    setVariables = (variables) => {
+    setVariables(variables) {
         this.#variables = variables
     }
-    setSchedules = (schedules) => {
+    setSchedules(schedules) {
         this.#schedules = schedules
     }
-    setName = (name) => {
+    setName(name) {
         this.#name = name
     }
 
-    getBot = () => {
+    getBot() {
         return this.#bot
     }
-    getVariables = () => {
+    getVariables() {
         return this.#variables
     }
-    getSchedules = () => {
+    getSchedules() {
         return this.#schedules
     }
-    getName = () => {
+    getName() {
         return this.#name
     }
-    toJson = () => {
+    toJson() {
         const json = {}
         json.name = this.getName()
         json.bot = this.getBot().toJson()
@@ -88,13 +88,13 @@ const Task = class {
 
         return json
     }
-    canStart = () => {
+    canStart() {
         if( !this.getBot() || !this.getVariables() || !this.getSchedules() || !this.getName() ){
             return false
         }
         return true
     }
-    start = () => {
+    start() {
         logger.debug(`Task.start(${this.#name})`)
         const sequenceRun = (texts, textConverter) => {
             let index = 0
@@ -159,28 +159,28 @@ const Task = class {
 
         return this.#jobs
     }
-    stop = () => {
+    stop() {
         console.debug(`Task.stop(${this.#name})`)
         for (let job of this.#jobs) {
             job.cancel()
         }
         this.#jobs = []
     }
-    restart = () => {
+    restart() {
         console.debug(`Task.restart(${this.#name})`)
         this.stop()
         this.start()
     }
-    getJobs = () => {
+    getJobs() {
         return this.#jobs
     }
-    isJobs = () => {
+    isJobs() {
         if( this.#jobs.length > 0 ){
             return true
         }
         return false
     }
-    getStatus = () => {
+    getStatus() {
         return this.isJobs() ? "run" : "stop"
     }
 }

@@ -2,7 +2,7 @@
 
 const fs = require('fs')
 
-const ConfigLoader = class {
+class ConfigLoader {
     #config
     constructor() {
       this.#config = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'))

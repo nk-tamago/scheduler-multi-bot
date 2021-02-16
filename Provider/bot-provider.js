@@ -3,8 +3,8 @@
 const { WebClient } = require('@slack/web-api')
 const { logger } = require('../Utils/logger.js')
 
-const BotProviderFactory = class {
-    static createBot = (type, options = {}) => {
+class BotProviderFactory {
+    static createBot(type, options = {}) {
         let bot = null
         switch (type) {
             case "slack":
@@ -27,23 +27,23 @@ const BotProviderFactory = class {
     }
 }
 
-const BaseBotProvider = class {
+class BaseBotProvider {
     async post(text) { }
 }
 
-const ConsoleBotProvider = class extends BaseBotProvider {
+class ConsoleBotProvider  extends BaseBotProvider {
     #userName
     constructor(userName = "bot") {
         super()
         this.#userName = userName
     }
-    post = async (text) => {
+    async (text) {
         const res = logger.info(`${this.#userName}: ${text}`)
         return res
     }
 }
 
-const SlackBotProvider = class extends BaseBotProvider {
+class SlackBotProvider  extends BaseBotProvider {
     #channelId
     #userName
     #iconUrl
@@ -58,7 +58,7 @@ const SlackBotProvider = class extends BaseBotProvider {
         this.#iconUrl = iconUrl
         this.#web = new WebClient(token)
     }
-    post = async (text) => {
+    async post(text) {
         try {
             const res = await this.#web.chat.postMessage({
                 channel: this.#channelId,

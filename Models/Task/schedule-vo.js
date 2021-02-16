@@ -1,6 +1,6 @@
 'use strict'
 
-const Schedules = class {
+class Schedules {
     #schedules
     constructor() {
         this.#schedules = []
@@ -22,7 +22,7 @@ const Schedules = class {
     }
 }
 
-const Schedule = class {
+class Schedule {
     static MODE_SEQUENCE = "sequence"
     static MDDE_RANDOM = "random"
     #mode

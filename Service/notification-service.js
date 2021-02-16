@@ -3,21 +3,21 @@
 const { TaskRepositoryFactory } = require('../Repository/repository-factory.js')
 const { logger } = require('../Utils/logger.js')
 
-const TaskRunner = class {
+class TaskRunner {
     #tasks
     constructor() {
         this.#tasks = []
     }
-    gettasks = () => {
+    gettasks() {
         return this.#tasks
     }
-    getTask = (name) => {
+    getTask(name) {
         return this.#tasks.find((t) => name === t.getName())
     }
-    exists = (name) => {
+    exists(name) {
         return this.#tasks.some((t) => name === t.getName())
     }
-    add = (task) => {
+    add(task) {
         if( this.#tasks.some((t) => task.name === t.getName()) === true ){
             return false
         }
@@ -25,7 +25,7 @@ const TaskRunner = class {
 
         return true
     }
-    update = (name, task) => {
+    update(name, task) {
         const index= this.#tasks.findIndex((t) => name === t.getName())
 
         if( index === -1 ){
@@ -38,7 +38,7 @@ const TaskRunner = class {
 
         return true
     }
-    delete = (name) => {
+    delete(name) {
         const index= this.#tasks.findIndex((t) => name === t.getName())
         if( index === -1 ){
             return false
@@ -50,26 +50,26 @@ const TaskRunner = class {
         return true
 
     }
-    clearAll = () => {
+    clearAll() {
         this.stopAll()
         this.#tasks = []
     }
-    startAll = () => {
+    startAll() {
         for (let task of this.#tasks) {
             task.start()
         }
     }
-    stopAll = () => {
+    stopAll() {
         for (let task of this.#tasks) {
             task.stop()
         }
     }
-    restartAll = () => {
+    restartAll() {
         for (let task of this.#tasks) {
             task.restart()
         }
     }
-    start = (name) => {
+    start(name) {
         const task = this.getTask(name)
 
         if( task === undefined){
@@ -79,7 +79,7 @@ const TaskRunner = class {
 
         return true
     }
-    stop = (name) => {
+    stop(name) {
         const task = this.getTask(name)
 
         if( task === undefined){
@@ -89,7 +89,7 @@ const TaskRunner = class {
 
         return true
     }
-    restart = (name) => {
+    restart(name) {
         const task = this.getTask(name)
 
         if( task === undefined){
@@ -103,14 +103,13 @@ const TaskRunner = class {
     
 }
 
-const NotificationService = class {
+class NotificationService {
     #repository
     #taskRunner = null
     constructor(config) {
         this.#repository = TaskRepositoryFactory.createRepository(config.repository.type, config.repository.options)
     }
-    run = async () => {
-
+    async run() {
         // データロード
         if (await this.#repository.load() === false) {
             const message = 'repository load error'
@@ -128,7 +127,7 @@ const NotificationService = class {
 
         return true
     }
-    stop = () => {
+    stop() {
         if(this.#taskRunner === null) {
             return false
         }
@@ -137,13 +136,13 @@ const NotificationService = class {
 
         this.#taskRunner = null
     }
-    restart = () => {
+    restart() {
         if(this.#taskRunner === null) {
             return false
         }
         return this.#taskRunner.restartAll()
     }
-    getStatus = () => {
+    getStatus() {
         if(this.#taskRunner === null) {
             return []
         }
@@ -154,14 +153,14 @@ const NotificationService = class {
 
         return status
     }
-    getTasks = () => {
+    getTasks() {
         if(this.#taskRunner === null) {
             return []
         }
 
         return this.#taskRunner.gettasks()
     }
-    getTask = ( name ) => {
+    getTask( name ) {
         if(this.#taskRunner === null) {
             return {}
         }
@@ -172,7 +171,7 @@ const NotificationService = class {
         return task ? task: undefined
 
     }
-    addTask = (task) => {
+    addTask(task) {
         if(this.#taskRunner === null) {
             return false
         }
@@ -181,7 +180,7 @@ const NotificationService = class {
 
         return this.#taskRunner.add(task)
     }
-    updateTask = (name, task) =>{
+    updateTask(name, task) {
         if(this.#taskRunner === null) {
             return false
         }
@@ -190,7 +189,7 @@ const NotificationService = class {
 
         return this.#taskRunner.update(name, task)
     }
-    deleteTask = (name) => {
+    deleteTask(name) {
         if(this.#taskRunner === null) {
             return false
         }
@@ -199,22 +198,22 @@ const NotificationService = class {
 
         return this.#taskRunner.delete(name)
     }
-    startTask = (name) => {
+    startTask(name) {
         if(this.#taskRunner === null) {
             return false
         }
         return this.#taskRunner.start(name)
     }
-    stopTask = (name) => {
+    stopTask(name) {
         if(this.#taskRunner === null) {
             return false
         }
         return this.#taskRunner.stop(name)
     }
-    exportJson = () => {
+    exportJson() {
         return this.#repository.toJson()
     }
-    importJson = (json) => {
+    importJson(json) {
         this.#repository.fromJson(json)
         const tasks = this.#repository.getTasks()
         
