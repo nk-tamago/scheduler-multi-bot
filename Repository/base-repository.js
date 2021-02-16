@@ -9,7 +9,7 @@ const { Task } = require('../Models/Task/task-entity.js')
 const { logger } = require('../Utils/logger.js')
 
 
-const BaseTaskRepository = class {
+class BaseTaskRepository {
     #tasks
     constructor() {
         this.#tasks = []
@@ -54,7 +54,7 @@ const BaseTaskRepository = class {
         await this.save()
 
     }
-    async deleteTask (name) {
+    async deleteTask(name) {
         const index = this.#tasks.findIndex( (t) =>{
             return t.getName() === name
         })
@@ -65,7 +65,7 @@ const BaseTaskRepository = class {
 
         await this.save()
     }
-    async fromJson (json) {
+    async fromJson(json) {
 
         if( json.tasks === undefined || Array.isArray(json.tasks) === false ){
             throw new Error(`[tasks] is not exists or is not Array`)
@@ -82,7 +82,7 @@ const BaseTaskRepository = class {
     }
 }
 
-const JsonTaskRepository = class extends BaseTaskRepository {
+class JsonTaskRepository extends BaseTaskRepository {
     #path
     constructor(options) {
         super()
@@ -92,7 +92,7 @@ const JsonTaskRepository = class extends BaseTaskRepository {
         }
         this.#path = options.json.path
     }
-    load = async () => {
+    async load() {
         const json = JSON.parse(fs.readFileSync(this.#path, 'utf8'))
         const tasks = []
 
@@ -141,10 +141,9 @@ const JsonTaskRepository = class extends BaseTaskRepository {
 
         return true
     }
-    save = async () => {
+    async save() {
         const json = await this.toJson()
         fs.writeFileSync(this.#path, JSON.stringify(json, undefined, 2), 'utf8')
-
     }
 }
 

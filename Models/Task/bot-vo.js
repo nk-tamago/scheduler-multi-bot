@@ -2,7 +2,7 @@
 
 const { BotProviderFactory } = require('../../Provider/bot-provider.js')
 
-const Bot = class {
+class Bot {
     #type
     #options
     #provider

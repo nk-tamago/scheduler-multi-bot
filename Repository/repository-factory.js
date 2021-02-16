@@ -3,8 +3,8 @@
 const { JsonTaskRepository } = require('./base-repository.js')
 const { NedbTaskRepository } = require('./nedb-repository.js')
 
-const TaskRepositoryFactory = class {
-    static createRepository = (type, options = {}) => {
+class TaskRepositoryFactory {
+    static createRepository(type, options = {}) {
         let repository = null
         switch (type) {
             case "json":

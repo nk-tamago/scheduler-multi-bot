@@ -5,33 +5,31 @@ const { Task } = require('../Models/Task/task-entity.js')
 const { logger, Logger } = require('../Utils/logger.js')
 const morgan = require('morgan')
 
-
 const wrap = fn => (...args) => fn(...args).catch(args[2])
 
-
-const ResponseStatus = class {
+class ResponseStatus {
     #name 
     #status
     constructor( name, status) {
         this.#name = name
         this.#status = status
     }
-    toJson = () => {
+    toJson() {
         return { name: this.#name, status: this.#status }
     }
 }
 
-const ResponseTask = class {
+class ResponseTask {
     #task
     constructor(task) {
         this.#task = task
     }
-    toJson = () => {
+    toJson() {
         return this.#task.toJson()
     }
 }
 
-const ResponseError = class {
+class ResponseError {
     static NAME_NOT_FIND = "Name not find"
     static TASK_EXISTS = "Task exists"
     static ILLEGAL_BODY = "Illegal body"
@@ -43,14 +41,14 @@ const ResponseError = class {
         this.#message = message
         this.#args = args
     }
-    toJson = () => {
+    toJson() {
         logger.error( `message:${this.#message}, param:${this.#args.join(",")}`)
         return { message: this.#message, param: this.#args.join(",") }
     }
 }
 
 
-const WebService = class {
+class WebService {
     #notificationService
     #tasks
     #app
@@ -69,7 +67,7 @@ const WebService = class {
           }))
         this.#tasks = []
     }
-    run = () => {
+    run() {
 
         this.#app.get("/health", wrap( async (req, res, next) => {
             return res.json()

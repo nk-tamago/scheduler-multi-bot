@@ -5,7 +5,7 @@ const config = require('./config-loader.js')
 const util = require('util')
 const format = winston.format
 
-const Logger = class {
+class Logger {
     #logger
 
     static levels = [ 

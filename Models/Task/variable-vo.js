@@ -1,6 +1,6 @@
 'use strict'
 
-const Variables = class {
+class Variables {
     #variables
     constructor() {
         this.#variables = []
@@ -22,7 +22,7 @@ const Variables = class {
     }
 }
 
-const Variable = class {
+class Variable {
     static TYPE_STATIC = "static"
     static TYPE_DYNAMIC = "dynamic"
     #type

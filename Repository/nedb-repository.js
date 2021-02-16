@@ -9,8 +9,7 @@ const { BaseTaskRepository } = require('./base-repository.js')
 const nedb = require('nedb')
 const util = require('util')
 
-
-const NedbTaskRepository = class extends BaseTaskRepository {
+class NedbTaskRepository extends BaseTaskRepository {
     #db
     #path
     #promiseFind
@@ -44,7 +43,7 @@ const NedbTaskRepository = class extends BaseTaskRepository {
 
     }
 
-    load = async () => {
+    async load() {
         logger.debug(`NedbTaskRepository.load(${this.#path})`)
 
         const tasks = []
@@ -99,7 +98,7 @@ const NedbTaskRepository = class extends BaseTaskRepository {
         return true
 
     }
-    addTask = async (task) => {
+    async addTask(task) {
         logger.debug(`NedbTaskRepository.addtask(${task.getName()})`)
         super.addTask(task)
 
@@ -110,7 +109,7 @@ const NedbTaskRepository = class extends BaseTaskRepository {
             throw new Error(err)
         }
     }
-    updateTask = async (name, task) => {
+    async updateTask(name, task) {
         logger.debug(`NedbTaskRepository.updateTask(${name})`)
         super.updateTask(name, task)
 
@@ -121,7 +120,7 @@ const NedbTaskRepository = class extends BaseTaskRepository {
             throw new Error(err)
         }
     }
-    deleteTask = async (name) => {
+    async deleteTask(name) {
         logger.debug(`NedbTaskRepository.deleteTask(${name})`)
         super.deleteTask(name)
         try {
@@ -133,7 +132,7 @@ const NedbTaskRepository = class extends BaseTaskRepository {
 
     }
 
-    fromJson = async(json) => {
+    async fromJson(json) {
         logger.debug(`NedbTaskRepository.fromJson()`)
 
         try {
@@ -151,10 +150,7 @@ const NedbTaskRepository = class extends BaseTaskRepository {
             throw new Error(err)
         }
     }
-
-
 }
-
 
 module.exports = {
     NedbTaskRepository: NedbTaskRepository
