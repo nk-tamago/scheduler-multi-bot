@@ -2,12 +2,8 @@
 
 const fs = require('fs')
 
-const { Variable, Variables } = require('../Models/Task/variable-vo.js')
-const { Schedule, Schedules } = require('../Models/Task/schedule-vo.js')
-const { Bot } = require('../Models/Task/bot-vo.js')
 const { Task } = require('../Models/Task/task-entity.js')
 const { logger } = require('../Utils/logger.js')
-
 
 class BaseTaskRepository {
     #tasks
@@ -18,19 +14,36 @@ class BaseTaskRepository {
         return this.#tasks
     }
     setTasks(tasks) {
+        const duplicateName = tasks.map( (t) => t.getName() ).filter((name, i, self) => self.indexOf(name) !== self.lastIndexOf(name))
+
+        if( duplicateName.length > 0 ) {
+            const names = duplicateName.filter((name, i, self) => self.indexOf(name) === i)
+            throw new Error(`Repository.setTasks: task.name is exists: ${names.join(',')}`)
+        } 
         this.#tasks = []
         this.#tasks = tasks
+
+        return true
     }
 
-    async save() {}
-    async load() {}
+    async save() {return true}
+    async load() {return true}
     getTasks() {
         return this.#tasks
     }
     async addTask(task) {
         logger.debug(`BaseTaskRepository.addtask(${task.getName()})`)
+
+        if( this.#tasks.some( t => t.getName() === task.getName()) === true ){
+            throw new Error(`Repository.addTask: task.name is exists: ${task.getName()}`)
+        }
+
         this.#tasks.push(task)
+       
         await this.save()
+
+        return true
+
     }
     toJson() {
         const json = {}
@@ -50,9 +63,13 @@ class BaseTaskRepository {
         if(index >= 0){
             this.#tasks[index] = task
         }
+        else {
+            throw new Error(`Repository.updateTask: name is not exists: ${name}`)
+        }
 
         await this.save()
 
+        return true
     }
     async deleteTask(name) {
         const index = this.#tasks.findIndex( (t) =>{
@@ -62,13 +79,18 @@ class BaseTaskRepository {
         if(index >= 0){
             this.#tasks.splice(index, 1)
         }
+        else {
+            throw new Error(`Repository.deleteTask: name is not exists: ${name}`)
+        }
 
         await this.save()
+
+        return true
     }
     async fromJson(json) {
 
         if( json.tasks === undefined || Array.isArray(json.tasks) === false ){
-            throw new Error(`[tasks] is not exists or is not Array`)
+            throw new Error(`Repository.fromJson: [tasks] is not exists or is not Array`)
         }
 
         const tasks = json.tasks.map( (task) => {
@@ -76,6 +98,7 @@ class BaseTaskRepository {
         })
 
         this.setTasks(tasks)
+
         await this.save()
 
         return tasks.length
@@ -93,49 +116,27 @@ class JsonTaskRepository extends BaseTaskRepository {
         this.#path = options.json.path
     }
     async load() {
-        const json = JSON.parse(fs.readFileSync(this.#path, 'utf8'))
-        const tasks = []
-
-        if (!json.tasks) {
-            logger.warn("tasks is not exists: ", this.#path)
+        let json = {}
+        try {
+            json = JSON.parse(fs.readFileSync(this.#path, 'utf8'))
+        }
+        catch (e) {
+            logger.warn(`json file is not exists: ${this.#path}`)
             return true
         }
 
-        for (let taskJson of json.tasks) {
-            if( this.tasks.some( t => t.name === taskJson.name) === true ){
-                logger.error("task.name is exists: ", taskJson.name)
-                return false
-            }
-
-            if (!taskJson.bot || !taskJson.bot.type || !taskJson.schedules) {
-                logger.error("tasks[bot.type or schedules] is not exists: ", this.#path)
-                return false
-            }
-            for (let schedule of taskJson.schedules) {
-                if (!schedule.mode || !schedule.cron || !schedule.texts) {
-                    logger.error("tasks.schedule[mode or cron or texts] is not exists: ", this.#path)
-                    return false
-                }
-            }
-
-            const bot = new Bot(taskJson.bot.type, taskJson.bot.options)
-            const variables = new Variables()
-
-            if (taskJson.variables) {
-                for (let variableJson of taskJson.variables) {
-                    const variable = new Variable(variableJson.type, variableJson.key, variableJson.value)
-                    variables.add(variable)
-                }
-            }
-
-            const schedules = new Schedules()
-            for (let scheduleJson of taskJson.schedules) {
-                const schedule = new Schedule(scheduleJson.mode, scheduleJson.cron, scheduleJson.texts)
-                schedules.add(schedule)
-            }
-
-            tasks.push( new Task(taskJson.name, bot, variables, schedules) )
+        if (!json.tasks) {
+            logger.warn(`tasks is not exists: ${this.#path}`)
+            return true
         }
+
+        if( json.tasks === undefined || Array.isArray(json.tasks) === false ){
+            throw new Error(`Repository.fromJson: [tasks] is not exists or is not Array`)
+        }
+
+        const tasks = json.tasks.map( (task) => {
+            return Task.fromJson(task)
+        })
 
         this.setTasks(tasks)
 
@@ -146,7 +147,6 @@ class JsonTaskRepository extends BaseTaskRepository {
         fs.writeFileSync(this.#path, JSON.stringify(json, undefined, 2), 'utf8')
     }
 }
-
 
 module.exports = {
     BaseTaskRepository: BaseTaskRepository,

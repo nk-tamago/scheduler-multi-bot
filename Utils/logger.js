@@ -64,32 +64,32 @@ class Logger {
         }
     }
 
-    error( message ) {
-        this.#logger.error(message)
+    error( message, ...args ) {
+        this.#logger.error(message, args)
     }
 
-    warn( message ) {
-        this.#logger.warn(message)
+    warn( message, ...args ) {
+        this.#logger.warn(message, args)
     }
 
-    info( message ) {
-        this.#logger.info(message)
+    info( message, ...args ) {
+        this.#logger.info(message, args)
     }
 
-    http( message ) {
-        this.#logger.http(message)
+    http( message, ...args ) {
+        this.#logger.http(message, args)
     }
 
-    verbose( message ) {
-        this.#logger.verbose(message)
+    verbose( message, ...args ) {
+        this.#logger.verbose(message, args)
     }
 
-    debug( message ) {
-        this.#logger.debug(message)
+    debug( message, ...args ) {
+        this.#logger.debug(message, args)
     }
 
-    silly( message ) {
-        this.#logger.silly(message)
+    silly( message, ...args ) {
+        this.#logger.silly(message, args)
     }
 }
 
