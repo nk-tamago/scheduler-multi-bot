@@ -37,7 +37,7 @@ class ConsoleBotProvider  extends BaseBotProvider {
         super()
         this.#userName = userName
     }
-    async (text) {
+    async post(text) {
         const res = logger.info(`${this.#userName}: ${text}`)
         return res
     }
