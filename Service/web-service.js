@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const { Task } = require('../Models/Task/task-entity.js')
 const { logger, Logger } = require('../Utils/logger.js')
 const morgan = require('morgan')
+const config = require('../Utils/config-loader.js')
 
 const wrap = fn => (...args) => fn(...args).catch(args[2])
 
@@ -42,8 +43,8 @@ class ResponseError {
         this.#args = args
     }
     toJson() {
-        logger.error( `message:${this.#message}, param:${this.#args.join(",")}`)
-        return { message: this.#message, param: this.#args.join(",") }
+        logger.error(`message: ${this.#message}, details: ${this.#args.join(",")}`)
+        return { message: this.#message, details: this.#args.join(",") }
     }
 }
 
@@ -62,7 +63,7 @@ class WebService {
         this.#app.use(bodyParser.json())
         this.#app.use(morgan('tiny', {
             stream: {
-              write: message => logger.http(message.trim()),
+              write: message => logger.http(message.trim())
             },
           }))
         this.#tasks = []
@@ -75,7 +76,9 @@ class WebService {
 
         this.#app.get("/status", wrap( async (req, res, next) =>{
             const resBody = this.#notificationService.getStatus().map( (s) => {
-                return (new ResponseStatus(s.name, s.status)).toJson()
+                return (
+                    new ResponseStatus(s.name, s.status)
+                    ).toJson()
            })
  
             return res.json(resBody)
@@ -84,7 +87,10 @@ class WebService {
         this.#app.get("/status/:name", wrap( async (req, res, next) => {
             const status = this.#notificationService.getStatus().find( (t) => req.params.name === t.name )
             if( status === undefined ){
-                return res.status(400).json((new ResponseError( ResponseError.NAME_NOT_FIND )).toJson())
+                return res.status(400).json(
+                    (new ResponseError(
+                        ResponseError.NAME_NOT_FIND
+                    )).toJson())
             }
             const resObj = new ResponseStatus(req.params.name, status.status )
             return res.json(resObj.toJson())
@@ -93,7 +99,9 @@ class WebService {
 
         this.#app.get("/tasks", wrap( async (req, res, next) => {
             const resBody = this.#notificationService.getTasks().map( (t)=>{
-                return (new ResponseTask(t)).toJson()
+                return (
+                    new ResponseTask(t)
+                    ).toJson()
             })
             return res.json(resBody)
         }))
@@ -101,7 +109,11 @@ class WebService {
         this.#app.get("/tasks/:name", wrap( async (req, res, next) => {
             const task = this.#notificationService.getTask(req.params.name)
             if( task === undefined ){
-                return res.status(400).json((new ResponseError(ResponseError.NAME_NOT_FIND )).toJson())
+                return res.status(400).json(
+                    (new ResponseError(
+                        ResponseError.NAME_NOT_FIND
+                    )).toJson()
+                )
             }
             const resObj = new ResponseTask(task)
 
@@ -123,11 +135,20 @@ class WebService {
             try {
                 task = Task.fromJson(req.body)
             } catch (e) {
-                return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_BODY, e)).toJson())
+                return res.status(400).json(
+                    (new ResponseError(
+                        ResponseError.ILLEGAL_BODY,
+                        e.message
+                    )).toJson()
+                )
             }
 
             if( this.#notificationService.addTask(task) === false ){
-                return res.status(400).json((new ResponseError(ResponseError.TASK_EXISTS )).toJson())
+                return res.status(400).json(
+                    (new ResponseError(
+                        ResponseError.TASK_EXISTS
+                    )).toJson()
+                )
             }
             return res.status(204).json()
         }))
@@ -139,11 +160,20 @@ class WebService {
                 task = Task.fromJson(req.body)
             }
             catch(e){
-                return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_BODY)).toJson())
+                return res.status(400).json(
+                    (new ResponseError(
+                        ResponseError.ILLEGAL_BODY,
+                        e.message
+                    )).toJson()
+                )
             }
 
             if( this.#notificationService.updateTask(req.params.name, task) === false ){
-                return res.status(400).json((new ResponseError(ResponseError.NAME_NOT_FIND )).toJson())
+                return res.status(400).json(
+                    (new ResponseError(
+                        ResponseError.NAME_NOT_FIND
+                    )).toJson()
+                )
             }
             return res.status(204).json()
         }))
@@ -204,22 +234,42 @@ class WebService {
 
             const fromDate = parseDate(req.params.date)
             if( fromDate === null ){
-                return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_PATH_PARAM )).toJson())
+                return res.status(400).json(
+                    (new ResponseError(
+                        ResponseError.ILLEGAL_PATH_PARAM,
+                        "date error"
+                    )).toJson()
+                )
             }
 
             const limit = getLimit(req.query)
             if( limit === null ){
-                return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_QUERY_PARAM, "limit")).toJson())
+                return res.status(400).json(
+                    (new ResponseError(
+                        ResponseError.ILLEGAL_QUERY_PARAM,
+                        "limit error"
+                    )).toJson()
+                )
             }
 
             const order = getOrder(req.query)
             if( order === null ){
-                return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_QUERY_PARAM, "order")).toJson())
+                return res.status(400).json(
+                    (new ResponseError(
+                        ResponseError.ILLEGAL_QUERY_PARAM,
+                        "order error"
+                    )).toJson()
+                )
             }
 
             const level = getLevel(req.query)
             if( level === null ){
-                return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_QUERY_PARAM, "level")).toJson())
+                return res.status(400).json(
+                    (new ResponseError(
+                        ResponseError.ILLEGAL_QUERY_PARAM,
+                        "level error"
+                    )).toJson()
+                )
             }
 
             const options = {
@@ -248,7 +298,12 @@ class WebService {
                 return res.json({count:count})
             }
             catch(err){
-                return res.status(400).json((new ResponseError(ResponseError.ILLEGAL_BODY)).toJson())
+                return res.status(400).json(
+                    (new ResponseError(
+                        ResponseError.ILLEGAL_BODY,
+                        err.message
+                    )).toJson()
+                )
             }
         }))
 
@@ -257,7 +312,7 @@ class WebService {
             return res.status(500).send(`Internal Server Error\n${err.message}`)
         })
 
-        this.#app.listen(process.env.PORT || 3000)
+        this.#app.listen(config.http.port)
 
     }
 }

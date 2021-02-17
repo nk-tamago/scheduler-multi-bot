@@ -10,11 +10,9 @@ const WebService = require('./Service/web-service.js')
 const { logger } = require('./Utils/logger.js')
 const config = require('./Utils/config-loader.js')
 
-
-
 const main = async (appConfg) => {
     
-    logger.debug("start")
+    logger.debug(`start port ${appConfg.http.port}`)
 
     const notificationService = new NotificationService(appConfg)
     await notificationService.run()
@@ -28,6 +26,6 @@ const main = async (appConfg) => {
         await main(config)
     }
     catch (e){
-        logger.error("main error: ", e)
+        logger.error(`main error: ${e.stack}`)
     }
 })()

@@ -6,6 +6,7 @@ const { Variable, Variables } = require('./variable-vo.js')
 const { Schedule, Schedules } = require('./schedule-vo.js')
 const { Bot } = require('./bot-vo.js')
 const { logger } = require('../../Utils/logger.js')
+const { JsonValidator } = require('../../Utils/json-validator.js');
 
 
 class Task {
@@ -14,6 +15,7 @@ class Task {
     #variables
     #schedules
     #jobs
+
     constructor(name = null, bot = null, variables = null, schedules = null) {
         this.#name = name
         this.#bot = bot
@@ -23,14 +25,10 @@ class Task {
     }
 
     static fromJson(json) {
+        const validate = new JsonValidator(JsonValidator.taskSchema)
         
-        if (!json.bot || !json.bot.type || !json.schedules) {
-            throw new Error(`[bot.type or schedules] is not exists`)
-        }
-        for (let schedule of json.schedules) {
-            if (!schedule.mode || !schedule.cron || !schedule.texts) {
-                throw new Error(`schedule[mode or cron or texts] is not exists`)
-            }
+        if( validate.valid(json) === false ){
+            throw new Error(`Task.fromJson: Task json validation is error`)
         }
 
         const bot = new Bot(json.bot.type, json.bot.options)

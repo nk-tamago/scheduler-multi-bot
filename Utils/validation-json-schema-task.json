@@ -1,0 +1,96 @@
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "bot": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["slack", "debug"]
+        },
+        "options": {
+          "type": "object",
+          "properties": {
+            "slack": {
+              "type": "object",
+              "properties": {
+                "channelId": {
+                  "type": "string"
+                },
+                "token": {
+                  "type": "string"
+                },
+                "userName": {
+                  "type": "string"
+                },
+                "iconUrl": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              },
+              "required": ["channelId", "token", "userName"]
+            },
+            "debug": {
+              "type": "object",
+              "properties": {
+                "userName": {
+                  "type": "string"
+                }
+              },
+              "required": ["userName"]
+            }
+          },
+          "required": ["slack", "debug"]
+        }
+      },
+      "required": ["type", "options"]
+    },
+    "variables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "uniquness": true,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["static", "dynamic"]
+          },
+          "key": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": ["type", "key", "value"]
+      }
+    },
+    "schedules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "uniquness": true,
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": ["sequence", "random"]
+          },
+          "cron": {
+            "type": "string"
+          },
+          "texts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["mode", "cron", "texts"]
+      }
+    }
+  },
+  "required": ["name", "bot", "variables", "schedules"]
+}

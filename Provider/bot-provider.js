@@ -68,7 +68,7 @@ class SlackBotProvider  extends BaseBotProvider {
             })
             return res
         } catch (error) {
-            logger.error("run error: ", error)
+            logger.error(`run error: ${error.stack}`)
         }
     }
 }
