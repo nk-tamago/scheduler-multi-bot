@@ -38,7 +38,7 @@ node index.js [configfile]
 ```
 ## json-repositoryファイル
 - `repository.type` が `json` の時のみ有効となります
-- WebAPIにて更新されますが、以下のルールで任意に作成することも出来ます
+- WebAPIにて更新されますが、以下のルールで手動で作成することも出来ます
 - `tasks.name` は必須一意となる名前を指定してください
 - `tasks.bot.type` は現在 `slack` or `debug` が指定できます。`debug` を指定するとコンソールに表示します
   - `tasks.bot.options` は `tasks.bot.type` によって設定する内容が異なります
@@ -58,10 +58,32 @@ node index.js [configfile]
     }
     ```
 - `tasks.schedules.mode` は `sequence` or `random` が指定できます
-  - `sequence` を指定すると `texts` を順番にpushします
-  - `random` を指定すると `texts` をランダムにpushします
+  - `sequence` を指定すると `texts` または `overrideObjects` を順番にpushします
+  - `random` を指定すると `texts` または `overrideObjects` をランダムにpushします
 - `tasks.schedules.cron` は cron式を指定します
-- `tasks.schedules.texts` には変数を指定することが出来ます。変数には静的変数と動的変数が指定できます
+- `tasks.schedules.texts` は単純なテキストを投稿したい時に指定します
+- `tasks.schedules.overrideObjects` は引用など複雑な情報を投稿したい時に指定します
+  - Slackの場合は以下URLのArgumentsを直接指定できます
+    - https://api.slack.com/methods/chat.postMessage
+    - 以下はデフォルト指定されているので入力不要です。入力した場合はデフォルトを上書きします
+      - token
+      - channel
+      - icon_url
+      - username
+    - 設定例
+      - ```json
+        "overrideObjects": [
+          {
+            "text": "引用例です",
+            "attachments": [{
+              "title": "タイトル",
+              "text": "引用メッセージ"
+            }]
+          }
+        ]
+        ```
+- `texts` と `overrideObjects` 両方に値が設定されている場合は `overrideObjects` が優先されます
+- `tasks.schedules.texts` , `overrideObjects` には変数を指定することが出来ます。変数には静的変数と動的変数が指定できます
   - `tasks.variables.type` == `static` が静的変数です
     - 固定値で置換します
     - `${xxxx}` の `xxxx` と同じ項目で `key` を指定してください 
@@ -103,7 +125,23 @@ node index.js [configfile]
             "シーケンス ${test} です",
             "シーケンス ${test2} です",
             "現在時刻は ${getNowTime} です"
-          ]
+          ],
+          "overrideObjects": [
+            {
+              "text": "優先テキストです",
+              "attachments": [{
+                "title": "タイトルです",
+                "text": "今の時間：${getNowTime}"
+              }]
+            },
+            {
+              "text": "優先テキストです",
+              "attachments": [{
+                "title": "タイトルです",
+                "text": "今の時間：${getNowTime}"
+              }]
+            }
+          ],
         },
         {
           "mode": "random",
@@ -111,7 +149,8 @@ node index.js [configfile]
           "texts": [
             "ランダム ${test} です",
             "ランダム ${test2} です"
-          ]
+          ],
+          "overrideObjects": []
         }
       ]
     }
@@ -179,7 +218,23 @@ REST APIを使用してスケジュールの登録、編集、削除が出来ま
             "sequence push ：${template1}",
             "sequence push ：${template2}",
             "sequence push ：temp3"
-          ]
+          ],
+          "overrideObjects": [
+            {
+              "text": "sequence push ：${template1}",
+              "attachments": [{
+                "title": "template1",
+                "text": "${template1}"
+              }]
+            },
+            {
+              "text": "sequence push ：${template2}",
+              "attachments": [{
+                "title": "template2",
+                "text": "${template2}"
+              }]
+            }
+          ],
         },
         {
           "mode": "random",
@@ -188,7 +243,8 @@ REST APIを使用してスケジュールの登録、編集、削除が出来ま
             "random push ：${template1}",
             "random push ：${template2}",
             "random push ：temp3"
-          ]
+          ],
+          "overrideObjects": []
         }
       ]
     }
