@@ -86,9 +86,15 @@
             "items": {
               "type": "string"
             }
+          },
+          "overrideObjects": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
           }
         },
-        "required": ["mode", "cron", "texts"]
+        "required": ["mode", "cron", "texts", "overrideObjects"]
       }
     }
   },

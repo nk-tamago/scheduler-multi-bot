@@ -28,18 +28,22 @@ class Schedule {
     #mode
     #cron
     #texts
-    constructor(mode, cron, texts) {
-        if (!mode || !cron || !texts) {
-            throw new Error("schedule [mode or cron or texts] is not exists")
+    #overrideObjects
+    constructor(mode, cron, texts, overrideObjects) {
+        if (!mode || !cron ) {
+            throw new Error("schedule [mode or cron] is not exists")
+        }
+        if ( !texts && !overrideObjects) {
+            throw new Error("schedule [texts or overrideObjects] is not exists")
         }
         if (mode !== Schedule.MODE_SEQUENCE && mode !== Schedule.MDDE_RANDOM) {
             throw new Error(`don't support schedule mode: ${mode}`)
         }
 
-
         this.#mode = mode
         this.#cron = cron
         this.#texts = texts
+        this.#overrideObjects = overrideObjects
     }
     get mode() {
         return this.#mode
@@ -50,11 +54,15 @@ class Schedule {
     get texts() {
         return this.#texts
     }
+    get overrideObjects() {
+        return this.#overrideObjects
+    }
     toJson() {
         return {
             mode: this.#mode,
             cron: this.#cron,
-            texts: this.#texts
+            texts: this.#texts,
+            overrideObjects: this.#overrideObjects
         }
     }
 }

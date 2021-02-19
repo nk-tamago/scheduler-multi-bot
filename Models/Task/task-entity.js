@@ -43,7 +43,7 @@ class Task {
 
         const schedules = new Schedules()
         for (let scheduleJson of json.schedules) {
-            const schedule = new Schedule(scheduleJson.mode, scheduleJson.cron, scheduleJson.texts)
+            const schedule = new Schedule(scheduleJson.mode, scheduleJson.cron, scheduleJson.texts, scheduleJson.overrideObjects)
             schedules.add(schedule)
         }
 
@@ -94,22 +94,46 @@ class Task {
     }
     start() {
         logger.debug(`Task.start(${this.#name})`)
-        const sequenceRun = (texts, textConverter) => {
+        const sequenceRun = (texts, overrideObjects, textConverter) => {
             let index = 0
             return async () => {
-                await this.#bot.provider.post(textConverter.convert(texts[index]))
-
-                index++
-                if (texts.length === index) {
-                    index = 0
+                try {
+                    let length = 0
+                    if( overrideObjects && overrideObjects.length > 0 ){
+                        const custom = JSON.parse(textConverter.convert(JSON.stringify(overrideObjects[index])))
+                        await this.#bot.provider.customPost(custom)
+                        length = overrideObjects.length
+                    }
+                    else {
+                        await this.#bot.provider.simpleTextPost(textConverter.convert(texts[index]))
+                        length = texts.length
+                    }
+                    index++
+                    if (length === index) {
+                        index = 0
+                    }
+                }
+                catch(e) {
+                    logger.error(`sequenceRun error: ${e.stack}`)
                 }
             }
         }
-        const randomRun = (texts, textConverter) => {
+        const randomRun = (texts, overrideObjects, textConverter) => {
             return async () => {
-                const index = Math.floor(Math.random() * texts.length)
-
-                await this.#bot.provider.post(textConverter.convert(texts[index]))
+                try {
+                    if( overrideObjects && overrideObjects.length > 0 ){
+                        const index = Math.floor(Math.random() * overrideObjects.length)
+                        const custom = JSON.parse(textConverter.convert(JSON.stringify(overrideObjects[index])))
+                        await this.#bot.provider.customPost(custom)
+                    }
+                    else {
+                        const index = Math.floor(Math.random() * texts.length)
+                        await this.#bot.provider.simpleTextPost(textConverter.convert(texts[index]))
+                    }
+                }
+                catch(e){
+                    logger.error(`randomRun error: ${e.stack}`)
+                }
             }
         }
 
@@ -133,13 +157,13 @@ class Task {
                 let run = null
                 switch (schedule.mode) {
                     case Schedule.MODE_SEQUENCE:
-                        run = sequenceRun(schedule.texts, textConverter)
+                        run = sequenceRun(schedule.texts, schedule.overrideObjects, textConverter)
                         break
                     case Schedule.MDDE_RANDOM:
-                        run = randomRun(schedule.texts, textConverter)
+                        run = randomRun(schedule.texts, schedule.overrideObjects, textConverter)
                         break
                     default:
-                        run = sequenceRun(schedule.texts, textConverter)
+                        run = sequenceRun(schedule.texts, schedule.overrideObjects, textConverter)
                         break
                 }
 

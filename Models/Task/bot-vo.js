@@ -1,6 +1,6 @@
 'use strict'
 
-const { BotProviderFactory } = require('../../Provider/bot-provider.js')
+const { BotProviderFactory } = require('../../Provider/bot-factory.js')
 
 class Bot {
     #type
