@@ -43,7 +43,7 @@ class SlackBotProvider  extends BaseBotProvider {
                 ...custom
             }
             const res = await this.#web.chat.postMessage( body )
-             res
+            return res
         } catch (error) {
             logger.error(`run error: ${error.stack}`)
         }

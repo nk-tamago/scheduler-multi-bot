@@ -1,5 +1,6 @@
 'use strict'
 
+const { logger } = require('./logger.js')
 const { Variable } = require('../Models/Task/variable-vo.js')
 
 class TextConverter {
@@ -14,6 +15,9 @@ class TextConverter {
         this.#variables = variables
     }
     convert(text) {
+        if(text === undefined){
+            return ""
+        }
 
         const convertText = this.#variables.toList().reduce((after, variable) => {
             const beforeReg = new RegExp("\\${" + variable.key + "}", 'g')

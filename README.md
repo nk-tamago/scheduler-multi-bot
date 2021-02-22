@@ -40,7 +40,7 @@ node index.js [configfile]
 - `repository.type` が `json` の時のみ有効となります
 - WebAPIにて更新されますが、以下のルールで手動で作成することも出来ます
 - `tasks.name` は必須一意となる名前を指定してください
-- `tasks.bot.type` は現在 `slack` or `debug` が指定できます。`debug` を指定するとコンソールに表示します
+- `tasks.bot.type` は現在 `slack` or `teams` or `debug` が指定できます。`debug` を指定するとコンソールに表示します
   - `tasks.bot.options` は `tasks.bot.type` によって設定する内容が異なります
   - ```json
     {
@@ -50,6 +50,9 @@ node index.js [configfile]
           "token": "xxxxx-xxxxxxx-xxxxxxxx-xxxxxxxx",
           "userName": "テストユーザ",
           "iconUrl": "https://****.png"
+        },
+        "teams": {
+          "webhook": "https://*****"
         },
         "debug": {
           "userName": "テストユーザ"
@@ -63,7 +66,7 @@ node index.js [configfile]
 - `tasks.schedules.cron` は cron式を指定します
 - `tasks.schedules.texts` は単純なテキストを投稿したい時に指定します
 - `tasks.schedules.overrideObjects` は引用など複雑な情報を投稿したい時に指定します
-  - Slackの場合は以下URLのArgumentsを直接指定できます
+  - Slackの場合は以下リンクのArgumentsを直接指定できます
     - https://api.slack.com/methods/chat.postMessage
     - 以下はデフォルト指定されているので入力不要です。入力した場合はデフォルトを上書きします
       - token
@@ -82,6 +85,8 @@ node index.js [configfile]
           }
         ]
         ```
+  - Teamsの場合は以下リンクの項目を直接指定できます
+    - https://docs.microsoft.com/ja-jp/outlook/actionable-messages/message-card-reference
 - `texts` と `overrideObjects` 両方に値が設定されている場合は `overrideObjects` が優先されます
 - `tasks.schedules.texts` , `overrideObjects` には変数を指定することが出来ます。変数には静的変数と動的変数が指定できます
   - `tasks.variables.type` == `static` が静的変数です
@@ -106,6 +111,9 @@ node index.js [configfile]
             "token": "xxxxx-xxxxxxx-xxxxxxxx-xxxxxxxx",
             "userName": "テストユーザ",
             "iconUrl": "https://****.png"
+          },
+          "teams": {
+            "webhook": "https://*****"
           },
           "debug": {
             "userName": "テストユーザ"
@@ -192,6 +200,9 @@ REST APIを使用してスケジュールの登録、編集、削除が出来ま
             "token": "",
             "userName": "template user",
             "iconUrl": "https://example/example.png"
+          },
+          "teams": {
+            "webhook": "https://*****"
           },
           "debug": {
             "userName": "template user"
